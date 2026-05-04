@@ -4,10 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { api } from "@/lib/api-client";
 import { formatPriceVND, propertyTypeLabel } from "@/lib/utils/format";
+import Pagination from "@/components/admin/Pagination";
 
 const Modal = dynamic(() => import("@/components/Modal"), { ssr: false });
 const ImagePicker = dynamic(() => import("@/components/ImagePicker"), { ssr: false });
 const TagsInput = dynamic(() => import("@/components/TagsInput"), { ssr: false });
+
+const PAGE_SIZE = 10;
 
 interface Segment {
   id: number;
@@ -102,6 +105,7 @@ export default function AdminPropertiesPage() {
   const [segments, setSegments] = useState<Segment[]>([]);
   const [segmentFilter, setSegmentFilter] = useState<string>("");
   const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Partial<Property>>(EMPTY);
   const [err, setErr] = useState("");
@@ -140,6 +144,22 @@ export default function AdminPropertiesPage() {
         (p.address || "").toLowerCase().includes(term)
     );
   }, [items, q]);
+
+  // Whenever the filtered result shrinks beyond the current page, clamp back.
+  useEffect(() => {
+    const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    if (page > pageCount) setPage(pageCount);
+  }, [filtered.length, page]);
+
+  // Reset to page 1 when the user changes search / segment filter.
+  useEffect(() => {
+    setPage(1);
+  }, [q, segmentFilter]);
+
+  const pageItems = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, page]);
 
   function startNew() {
     setEditing({ ...EMPTY, segment_id: segments[0]?.id });
@@ -247,7 +267,7 @@ export default function AdminPropertiesPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => (
+              {pageItems.map((p) => (
                 <tr key={p.id}>
                   <td>
                     <span
@@ -307,6 +327,15 @@ export default function AdminPropertiesPage() {
               )}
             </tbody>
           </table>
+        )}
+        {!loading && filtered.length > 0 && (
+          <Pagination
+            page={page}
+            pageSize={PAGE_SIZE}
+            total={filtered.length}
+            onChange={setPage}
+            itemLabel="BĐS"
+          />
         )}
       </div>
 

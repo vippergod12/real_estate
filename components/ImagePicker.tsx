@@ -52,22 +52,45 @@ export default function ImagePicker({
     setErr("");
     setUploading(true);
     setProgress({ done: 0, total: files.length });
-    const urls: string[] = [];
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const f = files[i];
-        const { url } = await api.uploadFile(f);
-        urls.push(url);
-        setProgress({ done: i + 1, total: files.length });
-      }
-      apply(urls);
-    } catch (e: any) {
-      setErr(e.message || "Tải ảnh lên thất bại.");
-    } finally {
-      setUploading(false);
-      setProgress(null);
-      if (fileRef.current) fileRef.current.value = "";
+
+    // Snapshot the current list so parallel uploads all append against the
+    // same baseline and incremental `onChange` calls don't race.
+    const baseline = [...list];
+    const accumulated: string[] = [];
+    const errors: string[] = [];
+    let done = 0;
+
+    await Promise.all(
+      files.map(async (f) => {
+        try {
+          const { url } = await api.uploadFile(f);
+          accumulated.push(url);
+          if (multiple) {
+            // Emit the growing list so thumbnails appear as soon as each file
+            // finishes — much better UX for batch uploads.
+            onChange([...baseline, ...accumulated]);
+          } else {
+            onChange(url);
+          }
+        } catch (e: any) {
+          errors.push(`${f.name}: ${e.message || "tải lên thất bại"}`);
+        } finally {
+          done++;
+          setProgress({ done, total: files.length });
+        }
+      })
+    );
+
+    if (errors.length > 0) {
+      setErr(
+        errors.length === 1
+          ? errors[0]
+          : `Có ${errors.length} ảnh tải không thành công. ${errors.join(" · ")}`
+      );
     }
+    setUploading(false);
+    setProgress(null);
+    if (fileRef.current) fileRef.current.value = "";
   }
 
   function onPickFiles(fileList: FileList | null) {
@@ -103,12 +126,18 @@ export default function ImagePicker({
           ⇪
         </div>
         <div>
-          <strong>{uploading ? "Đang tải ảnh lên…" : "Kéo thả ảnh vào đây"}</strong>
+          <strong>
+            {uploading
+              ? "Đang tải ảnh lên…"
+              : multiple
+                ? "Kéo thả một hoặc nhiều ảnh vào đây"
+                : "Kéo thả ảnh vào đây"}
+          </strong>
           <div className="muted" style={{ fontSize: "0.82rem", marginTop: 2 }}>
             {uploading && progress
-              ? `${progress.done}/${progress.total} ảnh`
+              ? `Đã tải ${progress.done}/${progress.total} ảnh`
               : multiple
-                ? "Hỗ trợ nhiều ảnh · JPG, PNG, WebP (tối đa 5MB/ảnh)"
+                ? "Chọn nhiều ảnh cùng lúc · JPG, PNG, WebP (tối đa 5MB/ảnh)"
                 : "JPG, PNG, WebP · tối đa 5MB"}
           </div>
         </div>
