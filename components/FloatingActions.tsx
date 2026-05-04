@@ -1,10 +1,11 @@
 "use client";
 
 import { getHotline, getZaloUrl } from "@/lib/utils/zalo";
+import { SITE_NAME } from "@/lib/seo/siteConfig";
 
 export default function FloatingActions() {
   const hotline = getHotline();
-  const zaloUrl = getZaloUrl("Chào VinaHome, tôi muốn tìm hiểu bất động sản.");
+  const zaloUrl = getZaloUrl(`Chào ${SITE_NAME}, tôi muốn tìm hiểu bất động sản.`);
   return (
     <div className="fab-stack">
       {hotline && (

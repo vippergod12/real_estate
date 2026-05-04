@@ -1,4 +1,5 @@
-import Link from "next/link";
+import Image from "next/image";
+import Link from "@/components/AppLink";
 import type { Property } from "@/lib/types";
 import { formatArea, formatPriceVND, propertyTypeLabel } from "@/lib/utils/format";
 
@@ -13,11 +14,28 @@ function accentTagClass(accent?: string | null) {
   }
 }
 
-export default function PropertyCard({ property: p }: { property: Property }) {
+interface Props {
+  property: Property;
+  /** Set true for above-the-fold cards (e.g. first row on home page). */
+  priority?: boolean;
+}
+
+export default function PropertyCard({ property: p, priority = false }: Props) {
   return (
     <Link href={`/bat-dong-san/${p.slug}`} className="card prop-card">
       <div className="thumb-wrap">
-        <div className="thumb" style={{ backgroundImage: `url(${p.cover_image})` }} />
+        <div className="thumb">
+          {p.cover_image && (
+            <Image
+              src={p.cover_image}
+              alt={p.title}
+              fill
+              sizes="(max-width: 560px) 100vw, (max-width: 960px) 50vw, 33vw"
+              priority={priority}
+              loading={priority ? undefined : "lazy"}
+            />
+          )}
+        </div>
         {p.segment_name && (
           <span className={`seg-chip ${accentTagClass(p.segment_accent)}`}>
             {p.segment_name}

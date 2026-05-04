@@ -1,9 +1,10 @@
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import { getZaloUrl } from "@/lib/utils/zalo";
+import { SITE_NAME } from "@/lib/seo/siteConfig";
 
 export default function BigCTA() {
   return (
-    <section className="section">
+    <section className="section reveal">
       <div className="container">
         <div
           style={{
@@ -39,7 +40,7 @@ export default function BigCTA() {
               </em>
             </h2>
             <p style={{ marginTop: 16, opacity: 0.85, maxWidth: 620, marginInline: "auto" }}>
-              Để lại thông tin hoặc nhắn Zalo — cố vấn VinaHome sẽ liên hệ trong vòng 15 phút với
+              Để lại thông tin hoặc nhắn Zalo — cố vấn {SITE_NAME} sẽ liên hệ trong vòng 15 phút với
               danh sách BĐS phù hợp nhất.
             </p>
             <div className="row" style={{ justifyContent: "center", marginTop: 36, gap: 14 }}>

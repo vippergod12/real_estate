@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
-import ContactForm from "./ContactForm";
+import dynamic from "next/dynamic";
 import { getAddress, getContactEmail, getHotline, getZaloUrl } from "@/lib/utils/zalo";
+import { SITE_NAME } from "@/lib/seo/siteConfig";
+
+const ContactForm = dynamic(() => import("./ContactForm"), {
+  loading: () => (
+    <div className="muted" style={{ padding: 40, textAlign: "center" }}>
+      Đang tải form…
+    </div>
+  ),
+});
 
 export const metadata: Metadata = {
-  title: "Liên hệ",
-  description:
-    "Liên hệ VinaHome — nhận tư vấn bất động sản miễn phí trong 15 phút. Chúng tôi phục vụ toàn bộ phân khúc giá.",
+  title: "Tư vấn miễn phí",
+  description: `Liên hệ ${SITE_NAME} — nhận tư vấn bất động sản miễn phí trong 15 phút. Chúng tôi phục vụ toàn bộ phân khúc giá.`,
 };
 
 export default function ContactPage() {
@@ -15,24 +23,20 @@ export default function ContactPage() {
 
   return (
     <>
-      <section style={{ background: "var(--ink-900)", color: "#fff", padding: "160px 0 80px" }}>
+      <section className="page-hero">
         <div className="container">
-          <span className="eyebrow" style={{ color: "var(--gold-400)" }}>
-            Liên hệ
-          </span>
-          <h1 className="serif" style={{ marginTop: 14, maxWidth: 720, color: "#fff" }}>
-            Hãy kể cho chúng tôi nghe về <em style={{ color: "var(--gold-400)" }}>
-              tổ ấm mơ ước
-            </em> của bạn.
+          <span className="eyebrow page-hero__eyebrow">Tư vấn miễn phí</span>
+          <h1 className="serif page-hero__title">
+            Hãy kể cho chúng tôi nghe về <em>tổ ấm mơ ước</em> của bạn.
           </h1>
-          <p style={{ marginTop: 16, color: "var(--cream-100)", opacity: 0.85, maxWidth: 640 }}>
-            Cố vấn VinaHome sẽ phản hồi trong vòng 15 phút (8:00 – 21:00 mỗi ngày).
+          <p className="page-hero__lead">
+            Cố vấn {SITE_NAME} sẽ phản hồi trong vòng 15 phút (8:00 – 21:00 mỗi ngày).
           </p>
         </div>
       </section>
 
       <section className="section">
-        <div className="container grid" style={{ gridTemplateColumns: "1fr 1.4fr", gap: 56 }}>
+        <div className="container contact-grid">
           <div>
             <h3 className="serif" style={{ marginBottom: 16 }}>
               Thông tin liên hệ
@@ -74,7 +78,7 @@ export default function ContactPage() {
               </div>
 
               <a
-                href={getZaloUrl("Chào VinaHome, tôi muốn tìm hiểu bất động sản.")}
+                href={getZaloUrl(`Chào ${SITE_NAME}, tôi muốn tìm hiểu bất động sản.`)}
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-gold"

@@ -1,18 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Be_Vietnam_Pro, Fraunces } from "next/font/google";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/seo/siteConfig";
 import { organizationJsonLd } from "@/lib/seo/jsonld";
 import "./globals.css";
 
-const inter = Inter({
+const bodyFont = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-sans-fam",
 });
-const playfair = Playfair_Display({
+
+const displayFont = Fraunces({
   subsets: ["latin", "vietnamese"],
   display: "swap",
-  variable: "--font-playfair",
+  variable: "--font-serif-fam",
+  axes: ["opsz", "SOFT"],
 });
 
 export const viewport: Viewport = {
@@ -57,7 +60,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="vi" className={`${bodyFont.variable} ${displayFont.variable}`}>
       <body>
         <script
           type="application/ld+json"

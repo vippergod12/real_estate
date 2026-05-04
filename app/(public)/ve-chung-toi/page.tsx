@@ -1,33 +1,31 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Image from "next/image";
+import Link from "@/components/AppLink";
 import { SITE_NAME } from "@/lib/seo/siteConfig";
 
 export const metadata: Metadata = {
   title: "Về chúng tôi",
-  description:
-    "Câu chuyện VinaHome — sàn giao dịch bất động sản cao cấp, đội ngũ cố vấn chuyên sâu theo phân khúc.",
+  description: `Câu chuyện ${SITE_NAME} — sàn giao dịch bất động sản cao cấp, đội ngũ cố vấn chuyên sâu theo phân khúc.`,
 };
 
 export default function AboutPage() {
   return (
     <>
-      <section
-        style={{
-          minHeight: 520,
-          color: "#fff",
-          padding: "160px 0 80px",
-          display: "flex",
-          alignItems: "flex-end",
-          background:
-            "linear-gradient(180deg, rgba(12,22,38,0.35), rgba(12,22,38,0.85)), url(https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=2000&q=80) center/cover",
-        }}
-      >
+      <section className="page-hero page-hero--image">
+        <div className="page-hero__bg">
+          <Image
+            src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=2000&q=80"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            quality={82}
+          />
+        </div>
         <div className="container">
-          <span className="eyebrow" style={{ color: "var(--gold-400)" }}>
-            Về {SITE_NAME}
-          </span>
-          <h1 className="serif" style={{ marginTop: 14, maxWidth: 780, color: "#fff" }}>
-            <em style={{ color: "var(--gold-400)" }}>12 năm</em> đồng hành cùng
+          <span className="eyebrow page-hero__eyebrow">Về {SITE_NAME}</span>
+          <h1 className="serif page-hero__title">
+            <em>12 năm</em> đồng hành cùng
             <br />
             những gia đình Việt.
           </h1>
@@ -76,11 +74,21 @@ export default function AboutPage() {
               style={{
                 aspectRatio: "4/5",
                 borderRadius: "var(--radius-xl)",
-                background:
-                  "url(https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80) center/cover",
+                overflow: "hidden",
+                position: "relative",
                 boxShadow: "var(--shadow-lg)",
+                background: "var(--cream-200)",
               }}
-            />
+            >
+              <Image
+                src="https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+                alt="Văn phòng LOC"
+                fill
+                sizes="(max-width: 720px) 100vw, 40vw"
+                loading="lazy"
+                style={{ objectFit: "cover" }}
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -130,7 +138,7 @@ export default function AboutPage() {
         <div className="container center">
           <h2 className="serif">Sẵn sàng tìm tổ ấm của bạn?</h2>
           <p className="muted" style={{ marginTop: 12, maxWidth: 520, marginInline: "auto" }}>
-            Hãy để đội ngũ cố vấn VinaHome đồng hành cùng bạn từ bước đầu tiên.
+            Hãy để đội ngũ cố vấn {SITE_NAME} đồng hành cùng bạn từ bước đầu tiên.
           </p>
           <Link href="/lien-he" className="btn btn-gold btn-lg" style={{ marginTop: 24 }}>
             Liên hệ tư vấn →

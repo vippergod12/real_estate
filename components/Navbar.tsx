@@ -1,10 +1,18 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/AppLink";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SITE_NAME } from "@/lib/seo/siteConfig";
 
-const links = [
+const desktopLinks = [
+  { href: "/", label: "Trang chủ" },
+  { href: "/bat-dong-san", label: "Bất động sản" },
+  { href: "/dich-vu", label: "Dịch vụ" },
+  { href: "/ve-chung-toi", label: "Về chúng tôi" },
+];
+
+const mobileLinks = [
   { href: "/", label: "Trang chủ" },
   { href: "/bat-dong-san", label: "Bất động sản" },
   { href: "/phan-khuc/duoi-3-ty", label: "Dưới 3 tỷ" },
@@ -16,7 +24,12 @@ const links = [
   { href: "/lien-he", label: "Liên hệ" },
 ];
 
+function brandMark(name: string): string {
+  return name.trim().charAt(0).toUpperCase() || "L";
+}
+
 export default function Navbar({ variant = "auto" }: { variant?: "auto" | "solid" }) {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(variant === "solid");
   const [open, setOpen] = useState(false);
 
@@ -35,60 +48,95 @@ export default function Navbar({ variant = "auto" }: { variant?: "auto" | "solid
     };
   }, [open]);
 
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
+
   return (
     <>
       <header className={`navbar ${scrolled ? "scrolled" : "transparent"}`}>
         <div className="container nav-inner">
-          <Link href="/" className="logo">
-            <span className="logo-mark">V</span>
-            <span>{SITE_NAME}</span>
+          <Link href="/" className="logo" aria-label={SITE_NAME}>
+            <span className="mark">{brandMark(SITE_NAME)}</span>
+            <span className="word">{SITE_NAME}</span>
           </Link>
-          <nav className="nav-links hide-mobile">
-            <Link href="/">Trang chủ</Link>
-            <Link href="/bat-dong-san">Bất động sản</Link>
-            <Link href="/dich-vu">Dịch vụ</Link>
-            <Link href="/ve-chung-toi">Về chúng tôi</Link>
-            <Link href="/lien-he">Liên hệ</Link>
+
+          <nav className="nav-links hide-mobile" aria-label="Điều hướng chính">
+            {desktopLinks.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={isActive(l.href) ? "active" : ""}
+              >
+                {l.label}
+              </Link>
+            ))}
           </nav>
+
           <div className="nav-cta">
-            <Link href="/lien-he" className="btn btn-gold btn-sm hide-mobile">
+            <Link href="/lien-he" className="btn btn-gold show-desktop">
               Tư vấn miễn phí
             </Link>
             <button
-              className="btn btn-ghost btn-sm"
+              className="hamburger show-mobile"
+              type="button"
               onClick={() => setOpen(true)}
               aria-label="Mở menu"
-              style={{ padding: "8px 12px" }}
             >
-              ☰
+              <span />
+              <span />
+              <span />
             </button>
           </div>
         </div>
       </header>
 
-      <div className={`nav-sheet ${open ? "open" : ""}`}>
+      <div className={`nav-sheet ${open ? "open" : ""}`} role="dialog" aria-label="Menu">
         <button className="close" onClick={() => setOpen(false)} aria-label="Đóng">
           ×
         </button>
-        <div style={{ marginTop: 24 }}>
-          <span className="eyebrow" style={{ color: "var(--gold-400)" }}>
+
+        <div>
+          <div className="eyebrow-bare" style={{ color: "var(--gold-300)" }}>
             Menu
-          </span>
+          </div>
+          <div
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: "0.95rem",
+              color: "rgba(251,248,242,0.55)",
+              marginTop: 8,
+              fontStyle: "italic",
+            }}
+          >
+            Nơi an cư trở thành di sản
+          </div>
         </div>
-        <nav style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} onClick={() => setOpen(false)}>
+
+        <nav>
+          {mobileLinks.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              onClick={() => setOpen(false)}
+              className={isActive(l.href) ? "active" : ""}
+              style={isActive(l.href) ? { color: "var(--gold-300)" } : undefined}
+            >
               {l.label}
             </Link>
           ))}
         </nav>
+
         <Link
           href="/lien-he"
           onClick={() => setOpen(false)}
           className="btn btn-gold"
-          style={{ alignSelf: "flex-start", marginTop: 20 }}
+          style={{ alignSelf: "flex-start", marginTop: "auto" }}
         >
-          Đặt lịch tư vấn →
+          Tư vấn miễn phí →
         </Link>
       </div>
     </>

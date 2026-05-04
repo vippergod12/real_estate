@@ -91,4 +91,40 @@ export const api = {
       method: "DELETE",
       auth: true,
     }),
+
+  /* ---------- contact submissions ---------- */
+  submitContact: (data: {
+    name: string;
+    phone?: string;
+    email?: string;
+    segment?: string;
+    message?: string;
+    source?: string;
+    property_id?: number;
+  }) =>
+    request<{ ok: true; id: number }>("/api/contact", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  listSubmissions: (params: { status?: string; q?: string; limit?: number } = {}) => {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== "") qs.set(k, String(v));
+    });
+    return request<{
+      submissions: any[];
+      stats: { new: number; contacted: number; done: number; trash: number; total: number };
+    }>(`/api/contact${qs.toString() ? `?${qs}` : ""}`, { auth: true });
+  },
+  updateSubmission: (id: number, data: { status?: string; note?: string }) =>
+    request<{ submission: any }>(`/api/contact/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      auth: true,
+    }),
+  deleteSubmission: (id: number) =>
+    request<{ ok: true }>(`/api/contact/${id}`, {
+      method: "DELETE",
+      auth: true,
+    }),
 };

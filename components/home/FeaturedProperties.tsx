@@ -1,11 +1,12 @@
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import type { Property } from "@/lib/types";
 import PropertyCard from "../PropertyCard";
+import { SITE_NAME } from "@/lib/seo/siteConfig";
 
 export default function FeaturedProperties({ properties }: { properties: Property[] }) {
   if (properties.length === 0) return null;
   return (
-    <section className="section">
+    <section className="section reveal">
       <div className="container">
         <div className="between" style={{ marginBottom: 40, alignItems: "flex-end" }}>
           <div>
@@ -15,7 +16,7 @@ export default function FeaturedProperties({ properties }: { properties: Propert
             </h2>
             <div className="divider" />
             <p className="muted" style={{ maxWidth: 600 }}>
-              Được chọn lọc kỹ lưỡng bởi đội ngũ cố vấn VinaHome — mỗi sản phẩm đều mang một câu
+              Được chọn lọc kỹ lưỡng bởi đội ngũ cố vấn {SITE_NAME} — mỗi sản phẩm đều mang một câu
               chuyện riêng về vị trí, thiết kế và giá trị gia tăng.
             </p>
           </div>

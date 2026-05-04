@@ -5,12 +5,12 @@ const items = [
     r: "Masteri An Phú — mua để ở",
   },
   {
-    q: "Thẩm định pháp lý cực kỹ, tư vấn đầu tư minh bạch. Tôi mua penthouse qua VinaHome và sẽ còn quay lại.",
+    q: "Thẩm định pháp lý cực kỹ, tư vấn đầu tư minh bạch. Tôi mua penthouse qua LOC và sẽ còn quay lại.",
     a: "Anh Minh Tuấn",
     r: "Penthouse Feliz en Vista",
   },
   {
-    q: "Ngân sách dưới 3 tỷ nhưng vẫn được tư vấn tận tâm. Cảm ơn VinaHome đã kiên nhẫn đưa tôi đi xem hơn 10 căn.",
+    q: "Ngân sách dưới 3 tỷ nhưng vẫn được tư vấn tận tâm. Cảm ơn LOC đã kiên nhẫn đưa tôi đi xem hơn 10 căn.",
     a: "Chị Lan Phương",
     r: "Vinhomes Grand Park",
   },
@@ -18,7 +18,7 @@ const items = [
 
 export default function Testimonials() {
   return (
-    <section className="section" style={{ background: "var(--ink-900)", color: "var(--cream-100)" }}>
+    <section className="section reveal" style={{ background: "var(--ink-900)", color: "var(--cream-100)" }}>
       <div className="container">
         <div className="center" style={{ marginBottom: 56 }}>
           <span className="eyebrow" style={{ color: "var(--gold-400)" }}>

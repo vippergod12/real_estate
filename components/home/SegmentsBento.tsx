@@ -1,14 +1,17 @@
-import Link from "next/link";
+import Image from "next/image";
+import Link from "@/components/AppLink";
 import type { Segment } from "@/lib/types";
 import { priceRangeLabel } from "@/lib/utils/format";
 
 const positions = ["seg-1", "seg-2", "seg-3", "seg-4"] as const;
+const FALLBACK_BG =
+  "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1600&q=80";
 
 export default function SegmentsBento({ segments }: { segments: Segment[] }) {
   const four = segments.slice(0, 4);
 
   return (
-    <section className="section" style={{ background: "var(--cream-50)" }}>
+    <section className="section reveal" style={{ background: "var(--cream-50)" }}>
       <div className="container">
         <div className="between" style={{ marginBottom: 40, alignItems: "flex-end" }}>
           <div>
@@ -34,12 +37,15 @@ export default function SegmentsBento({ segments }: { segments: Segment[] }) {
               href={`/phan-khuc/${s.slug}`}
               className={`segment-tile accent-${s.accent || "gold"} ${positions[i]}`}
             >
-              <div
-                className="bg"
-                style={{
-                  backgroundImage: `url(${s.image_url || "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1600&q=80"})`,
-                }}
-              />
+              <div className="bg">
+                <Image
+                  src={s.image_url || FALLBACK_BG}
+                  alt={s.name}
+                  fill
+                  sizes="(max-width: 720px) 100vw, (max-width: 1280px) 50vw, 40vw"
+                  loading="lazy"
+                />
+              </div>
               <div>
                 <div className="accent-bar" />
                 <span

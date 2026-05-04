@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/seo/siteConfig";
 import { getAddress, getContactEmail, getHotline } from "@/lib/utils/zalo";
 
@@ -31,12 +31,12 @@ export default function Footer() {
               <li><Link href="/ve-chung-toi">Về chúng tôi</Link></li>
               <li><Link href="/dich-vu">Dịch vụ</Link></li>
               <li><Link href="/bat-dong-san">Tất cả BĐS</Link></li>
-              <li><Link href="/lien-he">Liên hệ</Link></li>
+              <li><Link href="/lien-he">Tư vấn miễn phí</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4>Liên hệ</h4>
+            <h4>Thông tin</h4>
             <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
               {getHotline() && (
                 <li>

@@ -24,7 +24,7 @@ const steps = [
 export default function Process() {
   return (
     <section
-      className="section"
+      className="section reveal"
       style={{
         background:
           "linear-gradient(180deg, var(--cream-100) 0%, var(--cream-50) 100%)",

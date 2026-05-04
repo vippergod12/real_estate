@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import AdminGate from "./AdminGate";
 
 export const metadata: Metadata = {
-  title: "Admin",
+  title: "Quản trị",
   robots: { index: false, follow: false },
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <div className="admin-shell">{children}</div>;
+  return <AdminGate>{children}</AdminGate>;
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import { getPropertyBySlug, getRelatedProperties } from "@/lib/data";
 import {
   formatArea,
@@ -9,6 +10,7 @@ import {
   propertyTypeLabel,
 } from "@/lib/utils/format";
 import PropertyCard from "@/components/PropertyCard";
+import Lightbox from "@/components/Lightbox";
 import { getZaloUrl, getHotline } from "@/lib/utils/zalo";
 import { SITE_URL, SITE_NAME } from "@/lib/seo/siteConfig";
 import { breadcrumbJsonLd, propertyJsonLd } from "@/lib/seo/jsonld";
@@ -34,12 +36,21 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
+function pillClass(accent?: string | null) {
+  switch (accent) {
+    case "emerald": return "pill pill-em";
+    case "sapphire": return "pill pill-sa";
+    case "ruby": return "pill pill-ruby";
+    default: return "pill pill-gold";
+  }
+}
+
 export default async function PropertyDetailPage({ params }: Params) {
   const property = await getPropertyBySlug(params.slug);
   if (!property) notFound();
   const related = await getRelatedProperties(property.id, property.segment_id, 3);
 
-  const zaloMessage = `Chào VinaHome, tôi quan tâm BĐS "${property.title}" (${formatPriceVND(property.price)}).`;
+  const zaloMessage = `Chào ${SITE_NAME}, tôi quan tâm BĐS "${property.title}" (${formatPriceVND(property.price)}).`;
   const pricePerM2 =
     property.area && property.area > 0 ? Math.round(property.price / property.area) : null;
 
@@ -53,7 +64,10 @@ export default async function PropertyDetailPage({ params }: Params) {
     { name: property.title, url: `${SITE_URL}/bat-dong-san/${property.slug}` },
   ];
 
-  const galleryImages = [property.cover_image, ...property.gallery].slice(0, 5);
+  const allImages = [property.cover_image, ...(property.gallery ?? [])].filter(Boolean);
+  const fullAddress = [property.address, property.district, property.city]
+    .filter(Boolean)
+    .join(", ");
 
   return (
     <>
@@ -68,9 +82,20 @@ export default async function PropertyDetailPage({ params }: Params) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumb)) }}
       />
 
-      <section style={{ paddingTop: 120, paddingBottom: 32, background: "var(--cream-50)" }}>
+      {/* ============== HERO ============== */}
+      <section className="detail-hero">
+        <div className="bg">
+          <Image
+            src={property.cover_image}
+            alt={property.title}
+            fill
+            priority
+            sizes="100vw"
+            quality={82}
+          />
+        </div>
         <div className="container">
-          <div className="row" style={{ fontSize: "0.85rem", gap: 6, color: "var(--muted)" }}>
+          <div className="breadcrumb">
             <Link href="/">Trang chủ</Link>
             <span>/</span>
             <Link href="/bat-dong-san">Bất động sản</Link>
@@ -82,194 +107,313 @@ export default async function PropertyDetailPage({ params }: Params) {
                 </Link>
               </>
             )}
-            <span>/</span>
-            <span style={{ color: "var(--ink-700)" }}>{property.title}</span>
           </div>
 
-          <div className="between" style={{ marginTop: 20, alignItems: "flex-end", flexWrap: "wrap", gap: 20 }}>
-            <div>
-              <div className="row" style={{ gap: 10 }}>
-                <span className="tag tag-gold">{propertyTypeLabel(property.property_type)}</span>
-                {property.segment_name && <span className="tag tag-ink">{property.segment_name}</span>}
-              </div>
-              <h1 className="serif" style={{ marginTop: 14 }}>
-                {property.title}
-              </h1>
-              {property.subtitle && (
-                <p className="muted" style={{ marginTop: 10, maxWidth: 720, fontSize: "1.05rem" }}>
-                  {property.subtitle}
-                </p>
-              )}
-              <div
-                className="row"
-                style={{ marginTop: 16, gap: 20, color: "var(--ink-500)", fontSize: "0.95rem" }}
-              >
-                {property.address && <span>◎ {[property.address, property.district, property.city].filter(Boolean).join(", ")}</span>}
-              </div>
-            </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+            <span className={pillClass(property.segment_accent)}>
+              {property.segment_name}
+            </span>
+            <span className="pill pill-soft">{propertyTypeLabel(property.property_type)}</span>
+            {property.status === "da-ban" && (
+              <span className="pill pill-ink">Đã bán</span>
+            )}
+            {property.status === "cho-thue" && (
+              <span className="pill pill-soft">Cho thuê</span>
+            )}
+          </div>
 
-            <div style={{ textAlign: "right" }}>
-              <div className="muted" style={{ fontSize: "0.8rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                Giá chào bán
-              </div>
-              <div className="serif" style={{ fontSize: "clamp(2rem, 3vw, 2.6rem)", color: "var(--gold-700)", fontWeight: 700 }}>
-                {formatPriceVND(property.price)}
-              </div>
-              <div style={{ fontSize: "0.85rem", color: "var(--muted)" }}>
-                ≈ {formatPriceFull(property.price)}
-              </div>
+          <h1 className="serif">{property.title}</h1>
+
+          {property.subtitle && <p className="subtitle">{property.subtitle}</p>}
+
+          {fullAddress && (
+            <div
+              style={{
+                color: "rgba(251,248,242,0.85)",
+                fontSize: "0.95rem",
+                marginBottom: 24,
+              }}
+            >
+              ◎ {fullAddress}
+            </div>
+          )}
+
+          <div className="meta">
+            <div className="item">
+              <b>Giá chào bán</b>
+              <div className="val price">{formatPriceVND(property.price)}</div>
               {pricePerM2 && (
-                <div style={{ fontSize: "0.85rem", color: "var(--muted)", marginTop: 4 }}>
+                <div style={{ fontSize: "0.8rem", opacity: 0.65, marginTop: 2 }}>
                   {formatPriceFull(pricePerM2)} / m²
                 </div>
               )}
             </div>
+            {property.area != null && (
+              <div className="item">
+                <b>Diện tích</b>
+                <div className="val">{formatArea(property.area)}</div>
+              </div>
+            )}
+            {property.bedrooms != null && (
+              <div className="item">
+                <b>Phòng ngủ</b>
+                <div className="val">{property.bedrooms} PN</div>
+              </div>
+            )}
+            {property.bathrooms != null && (
+              <div className="item">
+                <b>Phòng tắm</b>
+                <div className="val">{property.bathrooms} WC</div>
+              </div>
+            )}
+            {property.direction && (
+              <div className="item">
+                <b>Hướng</b>
+                <div className="val">{property.direction}</div>
+              </div>
+            )}
           </div>
-
-          {galleryImages.length > 0 && (
-            <div className="gallery-grid" style={{ marginTop: 32 }}>
-              {galleryImages.map((src, i) => (
-                <div key={`${src}-${i}`} style={{ backgroundImage: `url(${src})` }} />
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
-      <section className="section" style={{ paddingTop: 48 }}>
-        <div className="container grid" style={{ gridTemplateColumns: "2fr 1fr", gap: 48 }}>
-          <div>
-            <h3 className="serif" style={{ marginBottom: 16 }}>
-              Thông tin bất động sản
-            </h3>
-            <div className="spec-grid">
-              <div>
-                <div className="label">Diện tích</div>
-                <div className="value">{formatArea(property.area)}</div>
-              </div>
-              <div>
-                <div className="label">Phòng ngủ</div>
-                <div className="value">{property.bedrooms ?? "—"}</div>
-              </div>
-              <div>
-                <div className="label">Phòng tắm</div>
-                <div className="value">{property.bathrooms ?? "—"}</div>
-              </div>
-              <div>
-                <div className="label">Số tầng</div>
-                <div className="value">{property.floors ?? "—"}</div>
-              </div>
-              <div>
-                <div className="label">Hướng</div>
-                <div className="value">{property.direction ?? "—"}</div>
-              </div>
-              <div>
-                <div className="label">Pháp lý</div>
-                <div className="value">{property.legal ?? "—"}</div>
-              </div>
-              <div>
-                <div className="label">Nội thất</div>
-                <div className="value">{property.furniture ?? "—"}</div>
-              </div>
-              <div>
-                <div className="label">Trạng thái</div>
-                <div className="value">
-                  {property.status === "da-ban"
-                    ? "Đã bán"
-                    : property.status === "cho-thue"
-                    ? "Cho thuê"
-                    : "Đang mở bán"}
+      {/* ============== GALLERY ============== */}
+      {allImages.length > 0 && (
+        <section className="section" style={{ paddingTop: 48, paddingBottom: 24 }}>
+          <div className="container">
+            <Lightbox images={allImages} />
+          </div>
+        </section>
+      )}
+
+      {/* ============== BODY + ASIDE ============== */}
+      <section className="section" style={{ paddingTop: 32 }}>
+        <div className="container">
+          <div className="detail-grid">
+            <div className="detail-body">
+              {property.description && (
+                <>
+                  <h2 className="serif">Giới thiệu</h2>
+                  <p>{property.description}</p>
+                </>
+              )}
+
+              {property.highlights.length > 0 && (
+                <>
+                  <h3 className="serif">Điểm nổi bật</h3>
+                  <ul className="highlights-list">
+                    {property.highlights.map((h, i) => (
+                      <li key={i}>{h}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+
+              {property.amenities.length > 0 && (
+                <>
+                  <h3 className="serif">Tiện ích nội khu</h3>
+                  <div className="row" style={{ gap: 8 }}>
+                    {property.amenities.map((a, i) => (
+                      <span key={i} className="tag">
+                        ✦ {a}
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <h3 className="serif">Thông số chi tiết</h3>
+              <div className="spec-grid" style={{ marginTop: 0 }}>
+                <div>
+                  <div className="label">Loại BĐS</div>
+                  <div className="value">{propertyTypeLabel(property.property_type)}</div>
                 </div>
-              </div>
-              <div>
-                <div className="label">Loại BĐS</div>
-                <div className="value">{propertyTypeLabel(property.property_type)}</div>
+                <div>
+                  <div className="label">Phân khúc</div>
+                  <div className="value">{property.segment_name ?? "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Trạng thái</div>
+                  <div className="value">
+                    {property.status === "da-ban"
+                      ? "Đã bán"
+                      : property.status === "cho-thue"
+                      ? "Cho thuê"
+                      : "Đang mở bán"}
+                  </div>
+                </div>
+                <div>
+                  <div className="label">Diện tích</div>
+                  <div className="value">{formatArea(property.area)}</div>
+                </div>
+                <div>
+                  <div className="label">Phòng ngủ</div>
+                  <div className="value">{property.bedrooms ?? "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Phòng tắm</div>
+                  <div className="value">{property.bathrooms ?? "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Số tầng</div>
+                  <div className="value">{property.floors ?? "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Hướng</div>
+                  <div className="value">{property.direction ?? "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Pháp lý</div>
+                  <div className="value">{property.legal ?? "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Nội thất</div>
+                  <div className="value">{property.furniture ?? "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Khu vực</div>
+                  <div className="value" style={{ fontSize: "0.92rem" }}>
+                    {property.district ?? "—"}
+                  </div>
+                </div>
+                <div>
+                  <div className="label">Mã BĐS</div>
+                  <div className="value" style={{ color: "var(--gold-700)" }}>
+                    #{property.id.toString().padStart(5, "0")}
+                  </div>
+                </div>
               </div>
             </div>
 
-            {property.description && (
-              <div style={{ marginTop: 40 }}>
-                <h3 className="serif" style={{ marginBottom: 16 }}>
-                  Mô tả chi tiết
-                </h3>
-                <div className="prose">
-                  <p>{property.description}</p>
-                </div>
+            <aside className="detail-aside">
+              <div
+                style={{
+                  display: "inline-block",
+                  padding: "4px 12px",
+                  background: "var(--gold-600)",
+                  color: "var(--ink-900)",
+                  borderRadius: 999,
+                  fontSize: "0.7rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Giá chào bán
               </div>
-            )}
-
-            {property.highlights.length > 0 && (
-              <div style={{ marginTop: 40 }}>
-                <h3 className="serif" style={{ marginBottom: 16 }}>
-                  Điểm nổi bật
-                </h3>
-                <ul className="prose">
-                  {property.highlights.map((h, i) => (
-                    <li key={i}>{h}</li>
-                  ))}
-                </ul>
+              <div
+                className="serif"
+                style={{
+                  fontSize: "clamp(2rem, 3vw, 2.6rem)",
+                  color: "var(--gold-400)",
+                  fontWeight: 700,
+                  margin: "10px 0 4px",
+                  lineHeight: 1,
+                }}
+              >
+                {formatPriceVND(property.price)}
               </div>
-            )}
-
-            {property.amenities.length > 0 && (
-              <div style={{ marginTop: 40 }}>
-                <h3 className="serif" style={{ marginBottom: 16 }}>
-                  Tiện ích
-                </h3>
-                <div className="row" style={{ gap: 8 }}>
-                  {property.amenities.map((a, i) => (
-                    <span key={i} className="tag">
-                      ✦ {a}
-                    </span>
-                  ))}
-                </div>
+              <div
+                style={{
+                  fontSize: "0.8rem",
+                  color: "rgba(251,248,242,0.6)",
+                }}
+              >
+                ≈ {formatPriceFull(property.price)}
               </div>
-            )}
-          </div>
 
-          <aside>
-            <div
-              style={{
-                position: "sticky",
-                top: 96,
-                padding: 28,
-                borderRadius: "var(--radius-lg)",
-                background: "var(--ink-900)",
-                color: "var(--cream-50)",
-              }}
-            >
-              <span className="eyebrow" style={{ color: "var(--gold-400)" }}>
-                Tư vấn ngay
-              </span>
-              <h3 className="serif" style={{ marginTop: 10, color: "#fff" }}>
-                Liên hệ cố vấn {SITE_NAME}
-              </h3>
-              <p style={{ color: "var(--ink-300)", fontSize: "0.9rem", marginTop: 10 }}>
-                Chúng tôi phản hồi trong vòng 15 phút (8:00 – 21:00).
-              </p>
+              <div
+                style={{
+                  height: 1,
+                  background: "rgba(255,255,255,0.1)",
+                  margin: "22px 0 6px",
+                }}
+              />
 
-              <div className="stack" style={{ marginTop: 20, gap: 10 }}>
-                <a href={getZaloUrl(zaloMessage)} target="_blank" rel="noreferrer" className="btn btn-gold">
+              <h3>Tóm tắt</h3>
+              <ul className="spec-list">
+                {property.area != null && (
+                  <li>
+                    <span>Diện tích</span>
+                    <b>{formatArea(property.area)}</b>
+                  </li>
+                )}
+                {property.bedrooms != null && (
+                  <li>
+                    <span>Phòng ngủ</span>
+                    <b>{property.bedrooms}</b>
+                  </li>
+                )}
+                {property.bathrooms != null && (
+                  <li>
+                    <span>Phòng tắm</span>
+                    <b>{property.bathrooms}</b>
+                  </li>
+                )}
+                {property.direction && (
+                  <li>
+                    <span>Hướng</span>
+                    <b>{property.direction}</b>
+                  </li>
+                )}
+                {property.legal && (
+                  <li>
+                    <span>Pháp lý</span>
+                    <b className="gold">{property.legal}</b>
+                  </li>
+                )}
+                {property.furniture && (
+                  <li>
+                    <span>Nội thất</span>
+                    <b>{property.furniture}</b>
+                  </li>
+                )}
+              </ul>
+
+              <div className="btn-stack">
+                <a
+                  href={getZaloUrl(zaloMessage)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-gold"
+                >
                   💬 Nhắn Zalo ngay
                 </a>
                 {getHotline() && (
-                  <a href={`tel:${getHotline()}`} className="btn btn-ghost" style={{ color: "#fff", borderColor: "rgba(255,255,255,0.3)" }}>
+                  <a
+                    href={`tel:${getHotline()}`}
+                    className="btn btn-outline"
+                    style={{ color: "#fff", borderColor: "rgba(255,255,255,0.3)" }}
+                  >
                     ☎ Gọi {getHotline()}
                   </a>
                 )}
-                <Link href="/lien-he" className="btn btn-ghost" style={{ color: "#fff", borderColor: "rgba(255,255,255,0.3)" }}>
-                  ✎ Để lại yêu cầu
+                <Link
+                  href="/lien-he"
+                  className="btn btn-ghost"
+                  style={{ color: "rgba(251,248,242,0.75)", justifyContent: "center" }}
+                >
+                  Để lại yêu cầu →
                 </Link>
               </div>
 
-              <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: 24, paddingTop: 20, fontSize: "0.85rem", color: "var(--ink-300)" }}>
-                Mã BĐS: <span style={{ color: "var(--gold-400)", fontWeight: 600 }}>#{property.id.toString().padStart(5, "0")}</span>
+              <div
+                style={{
+                  marginTop: 22,
+                  paddingTop: 18,
+                  borderTop: "1px solid rgba(255,255,255,0.08)",
+                  fontSize: "0.8rem",
+                  color: "rgba(251,248,242,0.5)",
+                  textAlign: "center",
+                }}
+              >
+                Cố vấn phản hồi trong 15 phút (8h – 21h)
               </div>
-            </div>
-          </aside>
+            </aside>
+          </div>
         </div>
       </section>
 
+      {/* ============== RELATED ============== */}
       {related.length > 0 && (
         <section className="section" style={{ background: "var(--cream-100)" }}>
           <div className="container">
@@ -280,7 +424,7 @@ export default async function PropertyDetailPage({ params }: Params) {
                   Bất động sản <em>tương tự</em>
                 </h2>
               </div>
-              <Link href={`/phan-khuc/${property.segment_slug}`} className="btn btn-ghost">
+              <Link href={`/phan-khuc/${property.segment_slug}`} className="btn btn-outline btn-sm">
                 Xem thêm {property.segment_name} →
               </Link>
             </div>

@@ -1,5 +1,5 @@
 -- =============================================================
--- VinaHome — Real estate by price segments
+-- LOC — Real estate by price segments
 -- =============================================================
 
 CREATE TABLE IF NOT EXISTS admins (
@@ -70,3 +70,24 @@ CREATE INDEX IF NOT EXISTS properties_hero_idx       ON properties(is_hero);
 CREATE INDEX IF NOT EXISTS properties_type_idx       ON properties(property_type);
 CREATE INDEX IF NOT EXISTS properties_price_idx      ON properties(price);
 CREATE INDEX IF NOT EXISTS properties_created_at_idx ON properties(created_at DESC);
+
+-- Contact form submissions
+CREATE TABLE IF NOT EXISTS contact_submissions (
+  id           SERIAL PRIMARY KEY,
+  name         VARCHAR(160) NOT NULL,
+  phone        VARCHAR(40),
+  email        VARCHAR(160),
+  segment      VARCHAR(80),        -- Dưới 3 tỷ / 3-6 tỷ / ...
+  message      TEXT,
+  source       VARCHAR(48) NOT NULL DEFAULT 'contact-form', -- contact-form | property | ...
+  property_id  INT REFERENCES properties(id) ON DELETE SET NULL,
+  status       VARCHAR(24) NOT NULL DEFAULT 'new',          -- new | contacted | done | trash
+  note         TEXT,
+  user_agent   VARCHAR(255),
+  ip           VARCHAR(64),
+  created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS contact_created_idx ON contact_submissions(created_at DESC);
+CREATE INDEX IF NOT EXISTS contact_status_idx  ON contact_submissions(status);

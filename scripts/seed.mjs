@@ -717,4 +717,81 @@ for (const p of properties) {
   `;
 }
 console.log(`[seed] Properties ready: ${properties.length}`);
+
+// ---------------- Sample contact submissions ----------------
+const submissions = [
+  {
+    name: "Trần Minh Quân",
+    phone: "0909 123 456",
+    email: "quan.tran@example.com",
+    segment: "3 – 6 tỷ",
+    message: "Mình đang tìm căn hộ 2PN khu Thủ Đức, ngân sách ~5 tỷ. Cuối tuần đi xem được không?",
+    status: "new",
+    minutesAgo: 12,
+  },
+  {
+    name: "Nguyễn Thu Hà",
+    phone: "0978 221 109",
+    email: "ha.nguyen@example.com",
+    segment: "Dưới 3 tỷ",
+    message: "Có căn 1PN nào ở quận Bình Thạnh dưới 2.8 tỷ không ạ?",
+    status: "new",
+    minutesAgo: 48,
+  },
+  {
+    name: "Phạm Quốc Anh",
+    phone: "0933 817 000",
+    email: null,
+    segment: "Trên 10 tỷ",
+    message: "Quan tâm penthouse Landmark 81 — cần thông tin hợp đồng và hỗ trợ pháp lý.",
+    status: "contacted",
+    note: "Đã gọi, khách hẹn xem trực tiếp tuần sau.",
+    minutesAgo: 60 * 6,
+  },
+  {
+    name: "Lê Hải Yến",
+    phone: "0912 004 887",
+    email: "yen.le@example.com",
+    segment: "6 – 10 tỷ",
+    message: "Cần biệt thự Thảo Điền, 3PN+ có sân vườn. Ngân sách linh hoạt 7-9 tỷ.",
+    status: "contacted",
+    note: "Đã gửi 3 căn qua Zalo.",
+    minutesAgo: 60 * 20,
+  },
+  {
+    name: "Đỗ Văn Dũng",
+    phone: "0989 552 110",
+    email: "dung.do@example.com",
+    segment: "3 – 6 tỷ",
+    message: "Đã mua xong, cảm ơn đội ngũ LOC!",
+    status: "done",
+    note: "Giao dịch thành công, căn Masteri M-One 4.2 tỷ.",
+    minutesAgo: 60 * 24 * 3,
+  },
+  {
+    name: "Võ Thị Lan",
+    phone: "0934 226 998",
+    email: null,
+    segment: null,
+    message: "Chỉ xem giá tham khảo",
+    status: "trash",
+    minutesAgo: 60 * 24 * 7,
+  },
+];
+
+for (const s of submissions) {
+  await sql`
+    INSERT INTO contact_submissions (
+      name, phone, email, segment, message, source, status, note, created_at, updated_at
+    ) VALUES (
+      ${s.name}, ${s.phone ?? null}, ${s.email ?? null}, ${s.segment ?? null},
+      ${s.message ?? null}, 'contact-form', ${s.status}, ${s.note ?? null},
+      NOW() - (${s.minutesAgo} * INTERVAL '1 minute'),
+      NOW() - (${s.minutesAgo} * INTERVAL '1 minute')
+    )
+    ON CONFLICT DO NOTHING
+  `;
+}
+console.log(`[seed] Submissions ready: ${submissions.length}`);
+
 console.log("[seed] Done.");

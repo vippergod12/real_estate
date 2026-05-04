@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/AppLink";
+import { SITE_NAME } from "@/lib/seo/siteConfig";
 
 export const metadata: Metadata = {
   title: "Dịch vụ",
-  description:
-    "Dịch vụ tư vấn & môi giới bất động sản của VinaHome: an cư, đầu tư, pháp lý, hỗ trợ vay ngân hàng.",
+  description: `Dịch vụ tư vấn & môi giới bất động sản của ${SITE_NAME}: an cư, đầu tư, pháp lý, hỗ trợ vay ngân hàng.`,
 };
 
 const services = [
@@ -49,17 +49,14 @@ const services = [
 export default function ServicesPage() {
   return (
     <>
-      <section style={{ background: "var(--ink-900)", color: "#fff", padding: "160px 0 80px" }}>
+      <section className="page-hero">
         <div className="container">
-          <span className="eyebrow" style={{ color: "var(--gold-400)" }}>
-            Dịch vụ
-          </span>
-          <h1 className="serif" style={{ marginTop: 14, maxWidth: 780, color: "#fff" }}>
-            Từ <em style={{ color: "var(--gold-400)" }}>tư vấn</em> đến{" "}
-            <em style={{ color: "var(--gold-400)" }}>bàn giao</em>, chúng tôi đi cùng bạn.
+          <span className="eyebrow page-hero__eyebrow">Dịch vụ</span>
+          <h1 className="serif page-hero__title">
+            Từ <em>tư vấn</em> đến <em>bàn giao</em>, chúng tôi đi cùng bạn.
           </h1>
-          <p style={{ marginTop: 18, color: "var(--cream-100)", opacity: 0.85, maxWidth: 720 }}>
-            VinaHome không chỉ giới thiệu BĐS. Chúng tôi tư vấn phân khúc, thẩm định pháp lý,
+          <p className="page-hero__lead">
+            {SITE_NAME} không chỉ giới thiệu BĐS. Chúng tôi tư vấn phân khúc, thẩm định pháp lý,
             hỗ trợ vay, đàm phán giá và quản lý sau bán — một điểm chạm trọn vẹn.
           </p>
         </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { getZaloUrl } from "@/lib/utils/zalo";
+import { SITE_NAME } from "@/lib/seo/siteConfig";
 
 export default function ContactForm() {
   const [state, setState] = useState({
@@ -12,16 +13,44 @@ export default function ContactForm() {
     message: "",
   });
   const [sent, setSent] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    const msg =
-      `Chào VinaHome!\n` +
-      `Tôi là ${state.name} (${state.phone}${state.email ? ` / ${state.email}` : ""}).\n` +
-      (state.segment ? `Phân khúc quan tâm: ${state.segment}.\n` : "") +
-      (state.message ? `${state.message}` : "Vui lòng tư vấn giúp tôi.");
-    window.open(getZaloUrl(msg), "_blank");
-    setSent(true);
+    setErr("");
+    if (!state.name.trim()) {
+      setErr("Vui lòng nhập họ tên.");
+      return;
+    }
+    if (!state.phone.trim() && !state.email.trim()) {
+      setErr("Vui lòng nhập số điện thoại hoặc email.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...state, source: "contact-form" }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || "Không gửi được. Vui lòng thử lại.");
+      }
+
+      const msg =
+        `Chào ${SITE_NAME}!\n` +
+        `Tôi là ${state.name} (${state.phone}${state.email ? ` / ${state.email}` : ""}).\n` +
+        (state.segment ? `Phân khúc quan tâm: ${state.segment}.\n` : "") +
+        (state.message ? `${state.message}` : "Vui lòng tư vấn giúp tôi.");
+      window.open(getZaloUrl(msg), "_blank");
+      setSent(true);
+    } catch (e: any) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (sent) {
@@ -30,11 +59,15 @@ export default function ContactForm() {
         className="card"
         style={{ padding: 32, background: "var(--cream-100)", border: "1px dashed var(--gold-400)" }}
       >
-        <div className="serif" style={{ fontSize: "1.4rem", color: "var(--gold-700)" }}>
+        <div
+          className="serif"
+          style={{ fontSize: "1.55rem", color: "var(--gold-700)", letterSpacing: "-0.01em" }}
+        >
           ✦ Cảm ơn bạn!
         </div>
-        <p className="muted" style={{ marginTop: 8 }}>
-          Chúng tôi vừa mở cửa sổ Zalo để tiếp tục trao đổi. Cố vấn sẽ phản hồi bạn trong ít phút.
+        <p className="muted" style={{ marginTop: 10, lineHeight: 1.7 }}>
+          Yêu cầu đã được ghi nhận. Chúng tôi vừa mở cửa sổ Zalo để tiếp tục trao đổi —
+          cố vấn sẽ phản hồi bạn trong ít phút.
         </p>
       </div>
     );
@@ -42,6 +75,7 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={submit} className="card" style={{ padding: 28, background: "#fff" }}>
+      {err && <div className="alert alert-error" style={{ marginBottom: 14 }}>⚠ {err}</div>}
       <div className="grid grid-2">
         <div className="field">
           <label>Họ và tên *</label>
@@ -95,11 +129,11 @@ export default function ContactForm() {
           placeholder="Hãy mô tả ngắn về nhu cầu của bạn..."
         />
       </div>
-      <button className="btn btn-primary" type="submit" style={{ marginTop: 20 }}>
-        Gửi yêu cầu →
+      <button className="btn btn-primary" type="submit" style={{ marginTop: 20 }} disabled={saving}>
+        {saving ? "Đang gửi..." : "Gửi yêu cầu →"}
       </button>
       <p className="muted" style={{ marginTop: 10, fontSize: "0.8rem" }}>
-        Form sẽ mở Zalo để chuyển thông tin cho cố vấn trong ít giây.
+        Thông tin của bạn được lưu an toàn — chúng tôi sẽ liên hệ trong vòng 15 phút.
       </p>
     </form>
   );

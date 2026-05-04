@@ -1,4 +1,4 @@
-# VinaHome — Website bất động sản theo phân khúc giá
+# LOC — Website bất động sản theo phân khúc giá
 
 > _An cư xứng tầm — Đầu tư bền vững_
 
@@ -186,5 +186,5 @@ Auth: header `Authorization: Bearer <token>`.
 
 ## Bản quyền
 
-Mã nguồn tham khảo, phát triển cho thương hiệu giả lập **VinaHome**. Tự do sử dụng & chỉnh sửa
+Mã nguồn tham khảo, phát triển cho thương hiệu giả lập **LOC**. Tự do sử dụng & chỉnh sửa
 cho mục đích kinh doanh thật.
