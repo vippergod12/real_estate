@@ -77,6 +77,7 @@ function normalizeProperty(r: Row): Property {
 
     is_featured: !!r.is_featured,
     is_hero: !!r.is_hero,
+    featured_order: r.featured_order != null ? Number(r.featured_order) : 0,
 
     views: r.views ?? 0,
     created_at: r.created_at,
@@ -218,7 +219,7 @@ export async function getPropertyBySlug(slug: string): Promise<Property | null> 
   );
 }
 
-export async function getFeaturedProperties(limit = 6): Promise<Property[]> {
+export async function getFeaturedProperties(limit = 30): Promise<Property[]> {
   return safe(
     async () => {
       const rows = (await sql`
@@ -226,7 +227,7 @@ export async function getFeaturedProperties(limit = 6): Promise<Property[]> {
         FROM properties p
         LEFT JOIN segments s ON s.id = p.segment_id
         WHERE p.is_featured = TRUE
-        ORDER BY p.updated_at DESC
+        ORDER BY p.featured_order ASC, p.updated_at DESC
         LIMIT ${limit}
       `) as Row[];
       return rows.map(normalizeProperty);

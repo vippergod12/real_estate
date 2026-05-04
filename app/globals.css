@@ -209,6 +209,11 @@ h1, h2 { margin: 0; }
 
 .section {
   padding: clamp(64px, 9vw, 128px) 0;
+  /* `.page-transition-host` has an ink-900 background (see the page
+     transition fix), so sections that don't set their own colour would
+     otherwise bleed through as dark. Default every .section to the cream
+     page colour; variants that need a different tone still override this. */
+  background: var(--bg);
 }
 
 .divider {
@@ -1108,7 +1113,8 @@ h1, h2 { margin: 0; }
   border-radius: 10px;
   border: 1px solid transparent;
   background: transparent;
-  display: inline-flex; align-items: center; justify-content: center;
+  display: none;
+  align-items: center; justify-content: center;
   flex-direction: column; gap: 4px;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
@@ -1244,6 +1250,31 @@ footer.site-footer .copyright {
   outline: none;
   border-color: var(--gold-500);
   box-shadow: 0 0 0 3px rgba(191,150,73,0.2);
+}
+.field.has-error input,
+.field.has-error textarea,
+.field.has-error select {
+  border-color: #d9534f;
+  background: #fff5f5;
+}
+.field.has-error input:focus,
+.field.has-error textarea:focus,
+.field.has-error select:focus {
+  border-color: #d9534f;
+  box-shadow: 0 0 0 3px rgba(217,83,79,0.18);
+}
+.field-error {
+  color: #b03030;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+.field label .field-counter {
+  float: right;
+  font-weight: 500;
+  color: var(--ink-500, #8a8578);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
 }
 
 /* =============================================================
@@ -1592,6 +1623,109 @@ footer.site-footer .copyright {
 }
 .alert-error   { background: rgba(220,80,80,0.12); color: #b03030; border: 1px solid rgba(220,80,80,0.3); }
 .alert-success { background: rgba(80,160,90,0.12); color: #2f6d3a; border: 1px solid rgba(80,160,90,0.3); }
+
+/* ---------- image picker ---------- */
+.image-picker__dropzone {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--cream-50);
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease;
+  outline: none;
+}
+.image-picker__dropzone:hover,
+.image-picker__dropzone:focus-visible,
+.image-picker__dropzone.is-over {
+  border-color: var(--gold-500);
+  background: rgba(200,160,70,0.06);
+}
+.image-picker__dropzone.is-busy {
+  cursor: progress;
+  opacity: 0.85;
+}
+.image-picker__dropzone-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold-300), var(--gold-500));
+  color: var(--ink-900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.image-picker__dropzone > div:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.image-picker__dropzone strong {
+  font-size: 0.95rem;
+  color: var(--ink-900);
+}
+.image-picker__url-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  align-items: stretch;
+}
+.image-picker__url-row input {
+  flex: 1;
+  min-width: 0;
+}
+.image-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.image-picker__tile {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--cream-200);
+}
+.image-picker__tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.image-picker__remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(12,22,38,0.82);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  width: 26px;
+  height: 26px;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s ease;
+}
+.image-picker__remove:hover { background: #b03030; }
+
+@media (max-width: 560px) {
+  .image-picker__dropzone {
+    flex-wrap: wrap;
+  }
+  .image-picker__url-row {
+    flex-wrap: wrap;
+  }
+}
 
 /* =============================================================
    MODAL — header / body / footer structure
@@ -2193,8 +2327,8 @@ footer.site-footer .copyright {
 .pick-feat-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-height: 220px;
+  gap: 6px;
+  max-height: 320px;
   overflow-y: auto;
   padding-right: 4px;
 }
@@ -2208,6 +2342,88 @@ footer.site-footer .copyright {
   border: 1px solid var(--border);
 }
 .pick-feat-item .pick-thumb { width: 44px; height: 44px; border-radius: 8px; }
+
+/* ---- drag & drop ---- */
+.pick-card.pick-feat .pick-card-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pick-feat-hint {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: var(--cream-100);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.pick-feat-item.is-draggable {
+  cursor: grab;
+  user-select: none;
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+  border: 1px solid transparent;
+}
+.pick-feat-item.is-draggable:active { cursor: grabbing; }
+.pick-feat-item.is-drag-over {
+  background: rgba(200,160,70,0.12);
+  border-color: var(--gold-500);
+  transform: translateY(-1px);
+}
+.pick-feat-drag {
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--muted);
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+.pick-feat-rank {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ink-900);
+  color: var(--gold-400);
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pick-feat-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.pick-feat-msg {
+  margin-right: auto;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+.pick-feat-msg.ok  { color: #2f6d3a; }
+.pick-feat-msg.err { color: #b03030; }
+
+/* ---- /bat-dong-san "xem thêm / thu gọn" pagination ---- */
+.bds-more {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(32px, 4.5vw, 48px);
+}
+.bds-more .btn {
+  min-width: 220px;
+  letter-spacing: 0.04em;
+}
+@media (max-width: 560px) {
+  .bds-more .btn { width: 100%; }
+}
 .pick-chip-rm {
   width: 28px; height: 28px;
   border-radius: 8px;

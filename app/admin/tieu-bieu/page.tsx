@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "@/components/AppLink";
 import { api } from "@/lib/api-client";
 import { formatPriceVND, propertyTypeLabel } from "@/lib/utils/format";
@@ -22,6 +22,7 @@ interface Property {
   cover_image: string;
   is_featured: boolean;
   is_hero: boolean;
+  featured_order?: number;
 }
 
 interface Segment {
@@ -46,6 +47,14 @@ export default function FeaturedPickerPage() {
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState<Record<number, "hero" | "featured" | null>>({});
+
+  // --- Drag & drop state for the "đang nổi bật" list ---
+  const [featuredOrder, setFeaturedOrder] = useState<Property[]>([]);
+  const [orderDirty, setOrderDirty] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const dragIdRef = useRef<number | null>(null);
+  const [dragOverId, setDragOverId] = useState<number | null>(null);
 
   async function refresh() {
     setLoading(true);
@@ -77,7 +86,42 @@ export default function FeaturedPickerPage() {
   }, [items, q]);
 
   const hero = useMemo(() => items.find((p) => p.is_hero) || null, [items]);
-  const featured = useMemo(() => items.filter((p) => p.is_featured), [items]);
+
+  // Featured list, sorted by saved `featured_order`. Kept in a separate state
+  // so the user can re-order without the change being overwritten by every
+  // toggleFeatured() call.
+  const baseFeatured = useMemo(
+    () =>
+      items
+        .filter((p) => p.is_featured)
+        .slice()
+        .sort((a, b) => {
+          const ao = a.featured_order ?? 0;
+          const bo = b.featured_order ?? 0;
+          if (ao !== bo) return ao - bo;
+          return b.id - a.id;
+        }),
+    [items]
+  );
+
+  // Sync drag list when the underlying items change, while preserving any
+  // in-flight re-order (ids that user just dragged but hasn't saved yet).
+  useEffect(() => {
+    if (!orderDirty) {
+      setFeaturedOrder(baseFeatured);
+      return;
+    }
+    // Merge: keep previous order for ids still featured, drop removed, append new.
+    setFeaturedOrder((prev) => {
+      const baseIds = new Set(baseFeatured.map((p) => p.id));
+      const prevIds = new Set(prev.map((p) => p.id));
+      const kept = prev.filter((p) => baseIds.has(p.id));
+      const added = baseFeatured.filter((p) => !prevIds.has(p.id));
+      return [...kept, ...added];
+    });
+  }, [baseFeatured, orderDirty]);
+
+  const featured = featuredOrder;
 
   async function toggleFeatured(p: Property) {
     setPending((x) => ({ ...x, [p.id]: "featured" }));
@@ -91,6 +135,68 @@ export default function FeaturedPickerPage() {
     } finally {
       setPending((x) => ({ ...x, [p.id]: null }));
     }
+  }
+
+  // --- Drag helpers for the featured list ---
+  function onDragStart(id: number) {
+    dragIdRef.current = id;
+  }
+  function onDragOverItem(e: React.DragEvent, overId: number) {
+    e.preventDefault(); // allow drop
+    if (dragIdRef.current === null || dragIdRef.current === overId) return;
+    setDragOverId(overId);
+  }
+  function onDragLeave() {
+    setDragOverId(null);
+  }
+  function onDropItem(e: React.DragEvent, overId: number) {
+    e.preventDefault();
+    const dragId = dragIdRef.current;
+    dragIdRef.current = null;
+    setDragOverId(null);
+    if (dragId === null || dragId === overId) return;
+    setFeaturedOrder((arr) => {
+      const from = arr.findIndex((p) => p.id === dragId);
+      const to = arr.findIndex((p) => p.id === overId);
+      if (from === -1 || to === -1) return arr;
+      const next = arr.slice();
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+    setOrderDirty(true);
+    setSaveMsg(null);
+  }
+  function onDragEnd() {
+    dragIdRef.current = null;
+    setDragOverId(null);
+  }
+
+  async function saveOrder() {
+    if (!orderDirty || savingOrder) return;
+    setSavingOrder(true);
+    setSaveMsg(null);
+    try {
+      await api.reorderFeatured(featuredOrder.map((p) => p.id));
+      // Patch local items with new featured_order so baseFeatured matches.
+      setItems((arr) => {
+        const m = new Map(featuredOrder.map((p, i) => [p.id, i]));
+        return arr.map((x) => (m.has(x.id) ? { ...x, featured_order: m.get(x.id)! } : x));
+      });
+      setOrderDirty(false);
+      setSaveMsg({ kind: "ok", text: "Đã lưu thứ tự." });
+      setTimeout(() => setSaveMsg(null), 2200);
+    } catch (e: any) {
+      setSaveMsg({ kind: "err", text: e.message || "Lưu thất bại." });
+    } finally {
+      setSavingOrder(false);
+    }
+  }
+
+  function resetOrder() {
+    setFeaturedOrder(baseFeatured);
+    setOrderDirty(false);
+    setSaveMsg(null);
   }
 
   async function setHero(p: Property) {
@@ -185,49 +291,99 @@ export default function FeaturedPickerPage() {
         </div>
 
         <div className="pick-card pick-feat">
-          <div className="pick-card-label">✦ Đang nổi bật ({featured.length})</div>
+          <div className="pick-card-label">
+            ✦ Đang nổi bật ({featured.length})
+            {featured.length > 0 && (
+              <span className="pick-feat-hint">Kéo thả để sắp xếp thứ tự</span>
+            )}
+          </div>
           {featured.length === 0 ? (
             <div className="muted" style={{ padding: "10px 0" }}>
               Chưa có BĐS nổi bật. Chọn ở danh sách bên dưới.
             </div>
           ) : (
-            <div className="pick-feat-list">
-              {featured.map((p) => (
-                <div key={p.id} className="pick-feat-item" title={p.title}>
-                  <span
-                    className="pick-thumb"
-                    style={{ backgroundImage: `url(${p.cover_image})` }}
-                  />
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div
-                      style={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        fontWeight: 500,
-                        fontSize: "0.88rem",
-                      }}
-                    >
-                      {p.title}
-                    </div>
-                    <div
-                      className="num-display muted"
-                      style={{ fontSize: "0.78rem" }}
-                    >
-                      {formatPriceVND(Number(p.price))}
-                    </div>
-                  </div>
-                  <button
-                    className="pick-chip-rm"
-                    onClick={() => toggleFeatured(p)}
-                    title="Bỏ nổi bật"
-                    disabled={pending[p.id] === "featured"}
+            <>
+              <div className="pick-feat-list" onDragLeave={onDragLeave}>
+                {featured.map((p, idx) => (
+                  <div
+                    key={p.id}
+                    className={`pick-feat-item is-draggable${
+                      dragOverId === p.id ? " is-drag-over" : ""
+                    }`}
+                    title={p.title}
+                    draggable
+                    onDragStart={() => onDragStart(p.id)}
+                    onDragOver={(e) => onDragOverItem(e, p.id)}
+                    onDrop={(e) => onDropItem(e, p.id)}
+                    onDragEnd={onDragEnd}
                   >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
+                    <span className="pick-feat-drag" aria-hidden>
+                      ⠿
+                    </span>
+                    <span className="pick-feat-rank" aria-hidden>
+                      {idx + 1}
+                    </span>
+                    <span
+                      className="pick-thumb"
+                      style={{ backgroundImage: `url(${p.cover_image})` }}
+                    />
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div
+                        style={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          fontWeight: 500,
+                          fontSize: "0.88rem",
+                        }}
+                      >
+                        {p.title}
+                      </div>
+                      <div
+                        className="num-display muted"
+                        style={{ fontSize: "0.78rem" }}
+                      >
+                        {formatPriceVND(Number(p.price))}
+                      </div>
+                    </div>
+                    <button
+                      className="pick-chip-rm"
+                      onClick={() => toggleFeatured(p)}
+                      title="Bỏ nổi bật"
+                      disabled={pending[p.id] === "featured"}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pick-feat-actions">
+                {saveMsg && (
+                  <span
+                    className={`pick-feat-msg ${saveMsg.kind === "ok" ? "ok" : "err"}`}
+                  >
+                    {saveMsg.text}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={resetOrder}
+                  disabled={!orderDirty || savingOrder}
+                >
+                  Hoàn tác
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={saveOrder}
+                  disabled={!orderDirty || savingOrder}
+                >
+                  {savingOrder ? "Đang lưu…" : orderDirty ? "Lưu thứ tự" : "Đã lưu"}
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>

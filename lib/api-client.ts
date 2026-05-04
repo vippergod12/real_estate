@@ -91,6 +91,12 @@ export const api = {
       method: "DELETE",
       auth: true,
     }),
+  reorderFeatured: (orderedIds: number[]) =>
+    request<{ ok: true; count: number }>("/api/properties/featured/order", {
+      method: "PUT",
+      body: JSON.stringify({ orderedIds }),
+      auth: true,
+    }),
 
   /* ---------- contact submissions ---------- */
   submitContact: (data: {
@@ -127,4 +133,25 @@ export const api = {
       method: "DELETE",
       auth: true,
     }),
+
+  /* ---------- file upload ---------- */
+  uploadFile: async (file: File): Promise<{ url: string }> => {
+    const form = new FormData();
+    form.append("file", file);
+    const headers: Record<string, string> = {};
+    const token = getToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+    // NOTE: no Content-Type header — the browser adds the multipart boundary.
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      headers,
+      body: form,
+    });
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : null;
+    if (!res.ok) {
+      throw new Error(data?.error || `HTTP ${res.status}`);
+    }
+    return data as { url: string };
+  },
 };

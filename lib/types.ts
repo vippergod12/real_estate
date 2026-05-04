@@ -62,6 +62,7 @@ export interface Property {
 
   is_featured: boolean;
   is_hero: boolean;
+  featured_order?: number;
 
   views: number;
   created_at: string;

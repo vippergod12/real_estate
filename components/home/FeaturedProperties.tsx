@@ -26,8 +26,8 @@ export default function FeaturedProperties({ properties }: { properties: Propert
         </div>
 
         <div className="grid grid-3">
-          {properties.map((p) => (
-            <PropertyCard key={p.id} property={p} />
+          {properties.map((p, i) => (
+            <PropertyCard key={p.id} property={p} priority={i < 3} />
           ))}
         </div>
       </div>

@@ -9,22 +9,18 @@ type Props = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, keyof LinkProps> &
   };
 
 /**
- * Project-wide `<Link>` replacement that never scrolls to top on navigation.
+ * Project-wide `<Link>` wrapper.
  *
- * Next.js's default behaviour is to call `window.scrollTo(0, 0)` after every
- * route change. Combined with any CSS transitions on <Navbar> (which reacts
- * to `scrollY` crossing its threshold), that produces visible jitter during
- * the page enter animation. Preserving the scroll position makes client-side
- * navigation feel instantaneous.
- *
- * Callers that *do* want a scroll-to-top (rare) can still opt in explicitly:
- *   <AppLink href="/..." scroll>
+ * We keep the default Next.js behaviour (`scroll={true}`) so every navigation
+ * jumps back to the top of the new page. Callers that need to preserve the
+ * current scroll position (e.g. in-page filter links) can opt out with
+ * `<AppLink href="/..." scroll={false}>`.
  */
 const AppLink = forwardRef<HTMLAnchorElement, Props>(function AppLink(
-  { scroll = false, ...rest },
+  props,
   ref
 ) {
-  return <NextLink ref={ref} scroll={scroll} {...rest} />;
+  return <NextLink ref={ref} {...props} />;
 });
 
 export default AppLink;

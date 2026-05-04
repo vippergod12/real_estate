@@ -71,6 +71,11 @@ CREATE INDEX IF NOT EXISTS properties_type_idx       ON properties(property_type
 CREATE INDEX IF NOT EXISTS properties_price_idx      ON properties(price);
 CREATE INDEX IF NOT EXISTS properties_created_at_idx ON properties(created_at DESC);
 
+-- Migration: ordering column for the "featured" carousel on the home page.
+-- Lower value = shown first. NULL-tolerant because earlier installs don't have it.
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS featured_order INT NOT NULL DEFAULT 0;
+CREATE INDEX IF NOT EXISTS properties_featured_order_idx ON properties(featured_order ASC, updated_at DESC);
+
 -- Contact form submissions
 CREATE TABLE IF NOT EXISTS contact_submissions (
   id           SERIAL PRIMARY KEY,

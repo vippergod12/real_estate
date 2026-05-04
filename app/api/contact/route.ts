@@ -2,26 +2,54 @@ import type { NextRequest } from "next/server";
 import { sql } from "@/lib/server/db";
 import { requireAdmin } from "@/lib/server/auth";
 import { badRequest, created, ok, serverError, unauthorized } from "@/lib/server/http";
+import {
+  validateEmail,
+  validateMessage,
+  validateName,
+  validatePhone,
+  validateSegment,
+} from "@/lib/utils/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
  * POST /api/contact — public, save submission from contact form.
+ *
+ * Validation is duplicated between this route and the client-side
+ * `ContactForm` via `lib/utils/validation.ts` so a tampered / scripted
+ * request can't bypass rules (e.g. sequential phone spam like
+ * `0123456789` / `0987654321`).
  */
 export async function POST(req: NextRequest) {
   try {
     const b = await req.json().catch(() => ({}));
-    const name = String(b.name ?? "").trim();
-    const phone = String(b.phone ?? "").trim();
-    const email = String(b.email ?? "").trim();
-    const segment = String(b.segment ?? "").trim();
-    const message = String(b.message ?? "").trim();
-    const source = String(b.source ?? "contact-form").trim().slice(0, 48) || "contact-form";
-    const propertyId = Number.isFinite(Number(b.property_id)) ? Number(b.property_id) : null;
+    const source =
+      String(b.source ?? "contact-form").trim().slice(0, 48) || "contact-form";
+    const propertyId = Number.isFinite(Number(b.property_id))
+      ? Number(b.property_id)
+      : null;
 
-    if (!name) return badRequest("Thiếu họ tên.");
-    if (!phone && !email) return badRequest("Cần số điện thoại hoặc email.");
+    const nameRes = validateName(String(b.name ?? ""));
+    if (!nameRes.ok) return badRequest(nameRes.error!);
+
+    const phoneRes = validatePhone(String(b.phone ?? ""));
+    if (!phoneRes.ok) return badRequest(phoneRes.error!);
+
+    const emailRes = validateEmail(String(b.email ?? ""));
+    if (!emailRes.ok) return badRequest(emailRes.error!);
+
+    const segmentRes = validateSegment(String(b.segment ?? ""));
+    if (!segmentRes.ok) return badRequest(segmentRes.error!);
+
+    const messageRes = validateMessage(String(b.message ?? ""));
+    if (!messageRes.ok) return badRequest(messageRes.error!);
+
+    const name = nameRes.value!;
+    const phone = phoneRes.value!;
+    const email = emailRes.value ?? "";
+    const segment = segmentRes.value ?? "";
+    const message = messageRes.value ?? "";
 
     const ua = req.headers.get("user-agent")?.slice(0, 255) || null;
     const ip =

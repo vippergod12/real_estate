@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "@/components/AppLink";
 import { listProperties, getSegments } from "@/lib/data";
-import PropertyCard from "@/components/PropertyCard";
 import { SITE_NAME } from "@/lib/seo/siteConfig";
 import FilterBar from "./FilterBar";
+import PropertiesList from "./PropertiesList";
 
 export const revalidate = 60;
 
@@ -92,17 +92,7 @@ export default async function PropertiesPage({ searchParams }: Params) {
             ))}
           </div>
 
-          {properties.length === 0 ? (
-            <p className="muted center" style={{ padding: 80 }}>
-              Không có bất động sản phù hợp. Hãy thử bộ lọc khác.
-            </p>
-          ) : (
-            <div className="grid grid-3">
-              {properties.map((p, i) => (
-                <PropertyCard key={p.id} property={p} priority={i < 3} />
-              ))}
-            </div>
-          )}
+          <PropertiesList properties={properties} />
         </div>
       </section>
     </>
