@@ -9,6 +9,9 @@ import Pagination from "@/components/admin/Pagination";
 const Modal = dynamic(() => import("@/components/Modal"), { ssr: false });
 const ImagePicker = dynamic(() => import("@/components/ImagePicker"), { ssr: false });
 const TagsInput = dynamic(() => import("@/components/TagsInput"), { ssr: false });
+const RichTextEditor = dynamic(() => import("@/components/admin/RichTextEditor"), {
+  ssr: false,
+});
 
 const PAGE_SIZE = 10;
 
@@ -385,10 +388,11 @@ export default function AdminPropertiesPage() {
 
         <div className="field" style={{ marginTop: 12 }}>
           <label>Mô tả chi tiết</label>
-          <textarea
-            rows={3}
+          <RichTextEditor
             value={editing.description ?? ""}
-            onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+            onChange={(v) => setEditing({ ...editing, description: v })}
+            placeholder="Mô tả chi tiết bất động sản. Bạn có thể bôi đậm, in nghiêng, gạch chân, tạo danh sách..."
+            rows={8}
           />
         </div>
 

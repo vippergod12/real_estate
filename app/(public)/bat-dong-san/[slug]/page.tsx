@@ -14,6 +14,20 @@ import Lightbox from "@/components/Lightbox";
 import { getZaloUrl, getHotline } from "@/lib/utils/zalo";
 import { SITE_URL, SITE_NAME } from "@/lib/seo/siteConfig";
 import { breadcrumbJsonLd, propertyJsonLd } from "@/lib/seo/jsonld";
+import { sanitizeHtml } from "@/lib/utils/sanitize-html";
+
+function plainTextFromHtml(html: string | null | undefined): string {
+  if (!html) return "";
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 export const revalidate = 60;
 
@@ -24,12 +38,14 @@ interface Params {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const p = await getPropertyBySlug(params.slug);
   if (!p) return { title: "Không tìm thấy bất động sản" };
+  const metaDesc =
+    p.subtitle || plainTextFromHtml(p.description).slice(0, 200) || p.title;
   return {
     title: p.title,
-    description: p.subtitle || p.description || p.title,
+    description: metaDesc,
     openGraph: {
       title: p.title,
-      description: p.subtitle || p.description || p.title,
+      description: metaDesc,
       images: [p.cover_image, ...p.gallery].filter(Boolean),
     },
     alternates: { canonical: `${SITE_URL}/bat-dong-san/${p.slug}` },
@@ -193,7 +209,13 @@ export default async function PropertyDetailPage({ params }: Params) {
               {property.description && (
                 <>
                   <h2 className="serif">Giới thiệu</h2>
-                  <p>{property.description}</p>
+                  <div
+                    className="rich-content"
+                    // eslint-disable-next-line react/no-danger
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeHtml(property.description),
+                    }}
+                  />
                 </>
               )}
 

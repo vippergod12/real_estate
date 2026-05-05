@@ -27,12 +27,20 @@ export function organizationJsonLd() {
   } as const;
 }
 
+function stripTags(s: string | null | undefined): string {
+  if (!s) return "";
+  return s
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function propertyJsonLd(p: Property) {
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     name: p.title,
-    description: p.subtitle || p.description || p.title,
+    description: p.subtitle || stripTags(p.description) || p.title,
     image: [p.cover_image, ...(p.gallery || [])].filter(Boolean),
     brand: { "@type": "Brand", name: SITE_NAME },
     offers: {
