@@ -41,13 +41,13 @@ export default function PropertyCard({ property: p, priority = false }: Props) {
             {p.segment_name}
           </span>
         )}
-        <span className="price-chip">{formatPriceVND(p.price)}</span>
       </div>
       <div className="body">
-        <div className="row" style={{ gap: 8 }}>
+        <div className="row prop-card__head" style={{ gap: 8, alignItems: "center" }}>
           <span className="tag">{propertyTypeLabel(p.property_type)}</span>
           {p.status === "da-ban" && <span className="tag tag-ink">Đã bán</span>}
           {p.status === "cho-thue" && <span className="tag">Cho thuê</span>}
+          <span className="price-chip">{formatPriceVND(p.price)}</span>
         </div>
         <h3 className="title">{p.title}</h3>
         {p.subtitle && <p className="muted" style={{ fontSize: "0.9rem", margin: 0 }}>{p.subtitle}</p>}
@@ -55,7 +55,7 @@ export default function PropertyCard({ property: p, priority = false }: Props) {
           {p.area != null && <span>◇ {formatArea(p.area)}</span>}
           {p.bedrooms != null && <span>⌂ {p.bedrooms} PN</span>}
           {p.bathrooms != null && <span>⊡ {p.bathrooms} WC</span>}
-          {p.district && <span>◎ {p.district}</span>}
+          {p.district && <span className="loc">◎ {p.district}</span>}
         </div>
       </div>
     </Link>

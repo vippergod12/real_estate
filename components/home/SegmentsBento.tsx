@@ -51,9 +51,10 @@ export default function SegmentsBento({ segments }: { segments: Segment[] }) {
                 <span
                   style={{
                     textTransform: "uppercase",
-                    fontSize: "0.7rem",
+                    fontSize: "0.72rem",
                     letterSpacing: "0.22em",
-                    color: "rgba(255,255,255,0.75)",
+                    color: "rgba(255,255,255,0.95)",
+                    fontWeight: 600,
                   }}
                 >
                   {priceRangeLabel(s.price_min, s.price_max)}
@@ -69,7 +70,13 @@ export default function SegmentsBento({ segments }: { segments: Segment[] }) {
                   {s.name}
                 </h3>
                 {s.tagline && (
-                  <p style={{ margin: "8px 0 0", color: "rgba(255,255,255,0.8)" }}>
+                  <p
+                    style={{
+                      margin: "8px 0 0",
+                      color: "#fbf6ea",
+                      fontWeight: 500,
+                    }}
+                  >
                     {s.tagline}
                   </p>
                 )}
@@ -79,9 +86,9 @@ export default function SegmentsBento({ segments }: { segments: Segment[] }) {
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 8,
-                    color: "var(--gold-400)",
-                    fontWeight: 600,
-                    fontSize: "0.9rem",
+                    color: "var(--gold-300)",
+                    fontWeight: 700,
+                    fontSize: "0.92rem",
                   }}
                 >
                   Xem {s.property_count ?? 0} BĐS →

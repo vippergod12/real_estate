@@ -145,9 +145,10 @@ export default async function PropertyDetailPage({ params }: Params) {
           {fullAddress && (
             <div
               style={{
-                color: "rgba(251,248,242,0.85)",
+                color: "#f6efde",
                 fontSize: "0.95rem",
                 marginBottom: 24,
+                textShadow: "0 1px 10px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3)",
               }}
             >
               ◎ {fullAddress}

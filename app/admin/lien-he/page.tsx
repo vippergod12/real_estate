@@ -4,8 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "@/components/AppLink";
 import { api } from "@/lib/api-client";
+import Pagination from "@/components/admin/Pagination";
 
 const Modal = dynamic(() => import("@/components/Modal"), { ssr: false });
+
+const PAGE_SIZE = 10;
 
 interface Submission {
   id: number;
@@ -70,6 +73,7 @@ export default function AdminSubmissionsPage() {
   const [stats, setStats] = useState({ new: 0, contacted: 0, done: 0, trash: 0, total: 0 });
   const [status, setStatus] = useState<string>("");
   const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState<Submission | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
@@ -102,6 +106,22 @@ export default function AdminSubmissionsPage() {
         (s.message || "").toLowerCase().includes(term)
     );
   }, [items, q]);
+
+  // Reset to page 1 whenever the search term or status tab changes.
+  useEffect(() => {
+    setPage(1);
+  }, [q, status]);
+
+  // Clamp `page` if filtering shrinks the result set below the current page.
+  useEffect(() => {
+    const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    if (page > pageCount) setPage(pageCount);
+  }, [filtered.length, page]);
+
+  const pageItems = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, page]);
 
   async function setItemStatus(id: number, newStatus: Submission["status"]) {
     try {
@@ -224,6 +244,7 @@ export default function AdminSubmissionsPage() {
             Chưa có yêu cầu nào trong mục này.
           </div>
         ) : (
+          <div className="admin-scroll">
           <table className="admin-table">
             <thead>
               <tr>
@@ -238,7 +259,7 @@ export default function AdminSubmissionsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((s) => (
+              {pageItems.map((s) => (
                 <tr key={s.id} className={s.status === "new" ? "row-new" : ""}>
                   <td>
                     {s.status === "new" && <span className="dot dot-ruby" title="Mới" />}
@@ -314,6 +335,16 @@ export default function AdminSubmissionsPage() {
               ))}
             </tbody>
           </table>
+          </div>
+        )}
+        {!loading && filtered.length > 0 && (
+          <Pagination
+            page={page}
+            pageSize={PAGE_SIZE}
+            total={filtered.length}
+            onChange={setPage}
+            itemLabel="yêu cầu"
+          />
         )}
       </div>
 

@@ -376,8 +376,12 @@ h1, h2 { margin: 0; }
   content: "";
   position: absolute; inset: 0;
   background:
-    linear-gradient(180deg, rgba(12,22,38,0.35) 0%, rgba(12,22,38,0.35) 45%, rgba(12,22,38,0.85) 100%),
-    linear-gradient(90deg, rgba(12,22,38,0.5) 0%, rgba(12,22,38,0) 60%);
+    linear-gradient(180deg,
+      rgba(12,22,38,0.55) 0%,
+      rgba(12,22,38,0.55) 38%,
+      rgba(12,22,38,0.78) 70%,
+      rgba(12,22,38,0.92) 100%),
+    linear-gradient(90deg, rgba(12,22,38,0.65) 0%, rgba(12,22,38,0.1) 65%, rgba(12,22,38,0) 100%);
 }
 .hero .container {
   position: relative;
@@ -387,25 +391,33 @@ h1, h2 { margin: 0; }
 }
 @media (max-width: 560px) {
   .hero::after {
-    background: linear-gradient(180deg, rgba(12,22,38,0.42) 0%, rgba(12,22,38,0.55) 55%, rgba(12,22,38,0.9) 100%);
+    background: linear-gradient(180deg,
+      rgba(12,22,38,0.6) 0%,
+      rgba(12,22,38,0.72) 55%,
+      rgba(12,22,38,0.94) 100%);
   }
 }
 
 .hero-content { max-width: 880px; }
 .hero-title {
-  color: var(--cream-50);
+  color: #fff;
   margin-top: 20px;
   font-size: clamp(2.2rem, 6vw, 4.6rem);
   line-height: 1.05;
+  text-shadow: 0 2px 24px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
 }
 .hero-lead {
   margin-top: clamp(18px, 2.2vw, 28px);
   font-size: clamp(0.98rem, 1.1vw, 1.1rem);
-  color: var(--cream-100);
-  opacity: 0.86;
+  color: #f6efde;
+  opacity: 1;
   max-width: 620px;
   line-height: 1.7;
   font-weight: 400;
+  text-shadow: 0 1px 12px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.35);
+}
+.hero .eyebrow {
+  text-shadow: 0 1px 8px rgba(0,0,0,0.55);
 }
 .hero-actions {
   margin-top: clamp(28px, 4vw, 42px);
@@ -460,20 +472,24 @@ h1, h2 { margin: 0; }
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(12,22,38,0.35) 0%,
-    rgba(12,22,38,0.7) 55%,
-    rgba(12,22,38,0.92) 100%
+    rgba(12,22,38,0.55) 0%,
+    rgba(12,22,38,0.78) 55%,
+    rgba(12,22,38,0.95) 100%
   );
 }
 .page-hero .container {
   position: relative;
   z-index: 1;
 }
-.page-hero__eyebrow { color: var(--gold-400); }
+.page-hero__eyebrow {
+  color: var(--gold-400);
+  text-shadow: 0 1px 8px rgba(0,0,0,0.55);
+}
 .page-hero__title {
   margin-top: 14px;
-  color: var(--cream-50);
+  color: #fff;
   max-width: 880px;
+  text-shadow: 0 2px 22px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
 }
 .page-hero__title em {
   color: var(--gold-400);
@@ -482,15 +498,17 @@ h1, h2 { margin: 0; }
 .page-hero__tagline {
   margin-top: 14px;
   font-style: italic;
-  color: var(--gold-400);
+  color: var(--gold-300);
   font-size: 1.15rem;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.55);
 }
 .page-hero__lead {
   margin-top: 16px;
-  color: var(--cream-100);
-  opacity: 0.88;
+  color: #f6efde;
+  opacity: 1;
   max-width: 720px;
   line-height: 1.7;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
 }
 .page-hero__chips {
   margin-top: 28px;
@@ -638,7 +656,46 @@ h1, h2 { margin: 0; }
   content: "";
   position: absolute; inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, rgba(12,22,38,0) 10%, rgba(12,22,38,0.78) 90%);
+  /* Diagonal: anchor dark at the bottom-left (where text starts) and fade
+     toward the top-right so the property photo stays clearly visible. */
+  background: linear-gradient(
+    to top right,
+    rgba(12,22,38,0.92) 0%,
+    rgba(12,22,38,0.6) 38%,
+    rgba(12,22,38,0.2) 72%,
+    rgba(12,22,38,0) 100%
+  );
+}
+/* Big hero tile is taller — push the dark coverage a bit higher to keep the
+   stacked title + tagline + meta line readable across the lower half. */
+.segment-tile.seg-1::after {
+  background: linear-gradient(
+    to top right,
+    rgba(12,22,38,0.95) 0%,
+    rgba(12,22,38,0.72) 32%,
+    rgba(12,22,38,0.28) 68%,
+    rgba(12,22,38,0) 100%
+  );
+}
+/* Flat dim overlay that fades in on hover for extra text legibility. */
+.segment-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(12, 22, 38, 0.42);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.segment-tile:hover::before,
+.segment-tile:focus-visible::before {
+  opacity: 1;
+}
+.segment-tile h3,
+.segment-tile p,
+.segment-tile span {
+  text-shadow: 0 2px 14px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.35);
 }
 .segment-tile.seg-1 { min-height: clamp(340px, 50vw, 460px); }
 .segment-tile.seg-1 h3 { font-size: clamp(1.5rem, 3.6vw, 2.4rem); }
@@ -974,24 +1031,27 @@ h1, h2 { margin: 0; }
 }
 .prop-card:hover .thumb { transform: scale(1.04); }
 .prop-card .thumb-wrap { overflow: hidden; position: relative; }
-.prop-card .thumb-wrap .price-chip {
-  position: absolute; left: 14px; bottom: 14px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: rgba(12,22,38,0.82);
-  color: var(--gold-400);
-  font-family: var(--font-num);
-  font-weight: 600;
-  font-variation-settings: 'opsz' 72, 'SOFT' 30;
-  font-variant-numeric: lining-nums tabular-nums;
-  font-size: 1rem;
-  letter-spacing: -0.005em;
-  backdrop-filter: blur(4px);
-}
 .prop-card .thumb-wrap .seg-chip {
   position: absolute; right: 14px; top: 14px;
 }
 .prop-card .body { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+/* Price chip — moved out of the thumbnail so it stays readable on dark
+   night photos. Sits on the right side of the type/status tag row. */
+.prop-card__head .price-chip {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--ink-900);
+  color: var(--gold-400);
+  font-family: var(--font-num);
+  font-weight: 700;
+  font-variation-settings: 'opsz' 72, 'SOFT' 30;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-size: 0.98rem;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+}
 .prop-card .title {
   font-family: var(--font-serif);
   font-variation-settings: 'opsz' 72, 'SOFT' 30;
@@ -1010,6 +1070,9 @@ h1, h2 { margin: 0; }
   border-top: 1px dashed var(--border);
 }
 .prop-card .meta span { display: inline-flex; align-items: center; gap: 6px; }
+/* Force the location chip onto its own row so cards stay aligned regardless
+   of district name length. */
+.prop-card .meta .loc { flex-basis: 100%; }
 
 /* =============================================================
    NAVBAR — refined, elegant
@@ -1675,21 +1738,25 @@ footer.site-footer .copyright {
   overflow: hidden;
 }
 
-/* Horizontal scroll wrapper for wide tables (AURA pattern) */
-.admin-card:has(.admin-table),
+/* Horizontal scroll wrapper for wide tables (AURA pattern).
+   Only matches when the table is a *direct* child so that wrapping the
+   table in `.admin-scroll` keeps the scroll boundary on the wrapper —
+   pagination/footers placed as siblings of the wrapper stay anchored
+   below the scrollbar instead of scrolling with the table. */
+.admin-card:has(> .admin-table),
 .admin-scroll {
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 }
-.admin-card:has(.admin-table)::-webkit-scrollbar,
+.admin-card:has(> .admin-table)::-webkit-scrollbar,
 .admin-scroll::-webkit-scrollbar { height: 10px; }
-.admin-card:has(.admin-table)::-webkit-scrollbar-thumb,
+.admin-card:has(> .admin-table)::-webkit-scrollbar-thumb,
 .admin-scroll::-webkit-scrollbar-thumb {
   background: var(--cream-300);
   border-radius: 999px;
 }
-.admin-card:has(.admin-table)::-webkit-scrollbar-thumb:hover,
+.admin-card:has(> .admin-table)::-webkit-scrollbar-thumb:hover,
 .admin-scroll::-webkit-scrollbar-thumb:hover { background: var(--gold-500); }
 
 .admin-table {
@@ -2065,7 +2132,7 @@ footer.site-footer .copyright {
 }
 .detail-hero .bg {
   position: absolute; inset: 0;
-  opacity: 0.72;
+  opacity: 0.78;
   transform: scale(1.04);
   animation: zoomslow 14s ease-out forwards;
 }
@@ -2075,27 +2142,74 @@ footer.site-footer .copyright {
 }
 .detail-hero::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(12,22,38,0.3) 0%, rgba(12,22,38,0.45) 50%, rgba(12,22,38,0.9) 100%);
+  background:
+    linear-gradient(180deg,
+      rgba(12,22,38,0.55) 0%,
+      rgba(12,22,38,0.7) 55%,
+      rgba(12,22,38,0.95) 100%),
+    linear-gradient(90deg, rgba(12,22,38,0.55) 0%, rgba(12,22,38,0.05) 65%, rgba(12,22,38,0) 100%);
 }
 .detail-hero .container { position: relative; z-index: 2; }
 .detail-hero .breadcrumb {
-  color: rgba(251,248,242,0.65); font-size: 0.85rem;
+  color: rgba(251,248,242,0.92); font-size: 0.85rem;
   display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
   margin-bottom: 20px;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.55);
 }
-.detail-hero .breadcrumb a { color: rgba(251,248,242,0.75); }
+.detail-hero .breadcrumb a { color: #fbf6ea; }
 .detail-hero .breadcrumb a:hover { color: var(--gold-300); }
 .detail-hero h1 {
-  color: var(--cream-50);
+  color: #fff;
   font-size: clamp(2rem, 4.2vw, 3.2rem);
   margin: 0 0 16px;
   max-width: 960px;
+  text-shadow: 0 2px 22px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
 }
 .detail-hero .subtitle {
-  color: rgba(251,248,242,0.82);
+  color: #f6efde;
   font-size: 1.05rem;
   max-width: 760px;
   margin-bottom: 28px;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
+}
+/* Pills sit on a dark hero overlay here, so the cream-bg variants used in
+   admin tables disappear. Override with high-contrast palettes. */
+.detail-hero .pill {
+  text-shadow: none;
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-weight: 700;
+}
+.detail-hero .pill.pill-gold {
+  background: rgba(191,150,73,0.32);
+  color: #f3d899;
+  border-color: rgba(231,201,142,0.55);
+}
+.detail-hero .pill.pill-em {
+  background: rgba(31,122,87,0.4);
+  color: #c8f0dc;
+  border-color: rgba(109,224,177,0.55);
+}
+.detail-hero .pill.pill-sa {
+  background: rgba(31,70,144,0.5);
+  color: #d8e6ff;
+  border-color: rgba(134,180,255,0.6);
+}
+.detail-hero .pill.pill-ruby {
+  background: rgba(139,30,63,0.45);
+  color: #ffd5df;
+  border-color: rgba(255,165,190,0.55);
+}
+.detail-hero .pill.pill-soft {
+  background: rgba(255,255,255,0.14);
+  color: var(--cream-50);
+  border-color: rgba(255,255,255,0.22);
+}
+.detail-hero .pill.pill-ink {
+  background: rgba(12,22,38,0.7);
+  color: #fff;
+  border-color: rgba(255,255,255,0.2);
 }
 .detail-hero .meta {
   display: flex;

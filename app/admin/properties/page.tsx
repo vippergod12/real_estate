@@ -256,6 +256,7 @@ export default function AdminPropertiesPage() {
             Đang tải...
           </div>
         ) : (
+          <div className="admin-scroll">
           <table className="admin-table">
             <thead>
               <tr>
@@ -330,6 +331,7 @@ export default function AdminPropertiesPage() {
               )}
             </tbody>
           </table>
+          </div>
         )}
         {!loading && filtered.length > 0 && (
           <Pagination
