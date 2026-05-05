@@ -943,6 +943,14 @@ h1, h2 { margin: 0; }
 @media (max-width: 900px) {
   .contact-grid { grid-template-columns: 1fr; }
 }
+/* `.eyebrow` is `display: inline-flex` globally (designed for <span> usage).
+   In the contact info column it is rendered on its own <div> as a label
+   above a value (Hotline / Email / Văn phòng / …), so force block-level
+   flex here to keep the value on the next line. */
+.contact-grid .eyebrow {
+  display: flex;
+  margin-bottom: 6px;
+}
 
 /* ---------- Story section ---------- */
 .story-grid {
@@ -1308,6 +1316,17 @@ footer.site-footer .copyright {
   font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   color: var(--ink-900);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* Prevent users from dragging the textarea wider than its column (which
+   pushed the form layout out). Vertical resize is still useful for long
+   messages. */
+.field textarea {
+  resize: vertical;
+  min-height: 96px;
+  max-width: 100%;
 }
 .field input:focus, .field textarea:focus, .field select:focus {
   outline: none;
