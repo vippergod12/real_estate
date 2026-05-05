@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api-client";
 
 interface Props {
@@ -16,7 +16,6 @@ export default function ImagePicker({
   multiple = false,
   label = "Ảnh",
 }: Props) {
-  const [input, setInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [err, setErr] = useState("");
@@ -25,38 +24,35 @@ export default function ImagePicker({
 
   const list = Array.isArray(value) ? value : value ? [value] : [];
 
-  function apply(urls: string[]) {
-    if (multiple) onChange([...(list as string[]), ...urls]);
-    else if (urls.length > 0) onChange(urls[0]);
-  }
-
-  function addFromInput() {
-    const url = input.trim();
-    if (!url) return;
-    apply([url]);
-    setInput("");
-  }
+  // Always track the most-recent list so async upload callbacks append to the
+  // latest state, never to a stale snapshot. This prevents parallel uploads
+  // (or back-to-back batches) from clobbering each other.
+  const listRef = useRef<string[]>(list);
+  useEffect(() => {
+    listRef.current = list;
+  }, [list]);
 
   function remove(i: number) {
     if (multiple) {
-      const next = [...(list as string[])];
+      const next = [...listRef.current];
       next.splice(i, 1);
+      listRef.current = next;
       onChange(next);
     } else {
+      listRef.current = [];
       onChange("");
     }
   }
 
   async function uploadFiles(files: File[]) {
     if (files.length === 0) return;
+    // Reset the native input so picking the same file again still re-fires.
+    if (fileRef.current) fileRef.current.value = "";
+
     setErr("");
     setUploading(true);
     setProgress({ done: 0, total: files.length });
 
-    // Snapshot the current list so parallel uploads all append against the
-    // same baseline and incremental `onChange` calls don't race.
-    const baseline = [...list];
-    const accumulated: string[] = [];
     const errors: string[] = [];
     let done = 0;
 
@@ -64,16 +60,19 @@ export default function ImagePicker({
       files.map(async (f) => {
         try {
           const { url } = await api.uploadFile(f);
-          accumulated.push(url);
           if (multiple) {
-            // Emit the growing list so thumbnails appear as soon as each file
-            // finishes — much better UX for batch uploads.
-            onChange([...baseline, ...accumulated]);
+            // Append against the latest state via the ref, then update the
+            // ref synchronously so the next completion sees this addition
+            // even before React has re-rendered.
+            const next = [...listRef.current, url];
+            listRef.current = next;
+            onChange(next);
           } else {
+            listRef.current = [url];
             onChange(url);
           }
         } catch (e: any) {
-          errors.push(`${f.name}: ${e.message || "tải lên thất bại"}`);
+          errors.push(`${f.name}: ${e?.message || "tải lên thất bại"}`);
         } finally {
           done++;
           setProgress({ done, total: files.length });
@@ -90,7 +89,6 @@ export default function ImagePicker({
     }
     setUploading(false);
     setProgress(null);
-    if (fileRef.current) fileRef.current.value = "";
   }
 
   function onPickFiles(fileList: FileList | null) {
@@ -103,6 +101,7 @@ export default function ImagePicker({
   function onDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     setDragOver(false);
+    if (uploading) return;
     onPickFiles(e.dataTransfer.files);
   }
 
@@ -111,8 +110,11 @@ export default function ImagePicker({
       <label>{label}</label>
 
       <div
-        className={`image-picker__dropzone${dragOver ? " is-over" : ""}${uploading ? " is-busy" : ""}`}
+        className={`image-picker__dropzone${dragOver ? " is-over" : ""}${
+          uploading ? " is-busy" : ""
+        }`}
         onDragOver={(e) => {
+          if (uploading) return;
           e.preventDefault();
           setDragOver(true);
         }}
@@ -121,6 +123,7 @@ export default function ImagePicker({
         onClick={() => !uploading && fileRef.current?.click()}
         role="button"
         tabIndex={0}
+        aria-disabled={uploading}
       >
         <div className="image-picker__dropzone-icon" aria-hidden>
           ⇪
@@ -130,8 +133,8 @@ export default function ImagePicker({
             {uploading
               ? "Đang tải ảnh lên…"
               : multiple
-                ? "Kéo thả một hoặc nhiều ảnh vào đây"
-                : "Kéo thả ảnh vào đây"}
+                ? "Kéo thả một hoặc nhiều ảnh từ máy vào đây"
+                : "Kéo thả ảnh từ máy vào đây"}
           </strong>
           <div className="muted" style={{ fontSize: "0.82rem", marginTop: 2 }}>
             {uploading && progress
@@ -152,30 +155,6 @@ export default function ImagePicker({
           style={{ display: "none" }}
           onChange={(e) => onPickFiles(e.target.files)}
         />
-      </div>
-
-      <div className="image-picker__url-row">
-        <input
-          type="url"
-          value={input}
-          placeholder="hoặc dán URL ảnh (https://…)"
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              addFromInput();
-            }
-          }}
-          disabled={uploading}
-        />
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          onClick={addFromInput}
-          disabled={uploading || !input.trim()}
-        >
-          + Thêm URL
-        </button>
       </div>
 
       {err && (

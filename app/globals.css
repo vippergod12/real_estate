@@ -1889,16 +1889,6 @@ footer.site-footer .copyright {
   font-size: 0.95rem;
   color: var(--ink-900);
 }
-.image-picker__url-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-  align-items: stretch;
-}
-.image-picker__url-row input {
-  flex: 1;
-  min-width: 0;
-}
 .image-picker__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -1941,9 +1931,6 @@ footer.site-footer .copyright {
 
 @media (max-width: 560px) {
   .image-picker__dropzone {
-    flex-wrap: wrap;
-  }
-  .image-picker__url-row {
     flex-wrap: wrap;
   }
 }
