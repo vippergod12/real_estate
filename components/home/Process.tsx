@@ -41,7 +41,7 @@ export default function Process() {
 
         <div className="grid grid-4">
           {steps.map((s) => (
-            <div key={s.n} className="card" style={{ padding: 28, background: "#fff" }}>
+            <div key={s.n} className="card" style={{ padding: "clamp(20px, 3vw, 28px)", background: "#fff" }}>
               <div
                 className="serif"
                 style={{

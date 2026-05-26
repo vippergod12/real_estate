@@ -11,7 +11,7 @@ export default function BigCTA() {
             position: "relative",
             overflow: "hidden",
             borderRadius: "var(--radius-xl)",
-            padding: "72px 48px",
+            padding: "clamp(40px, 8vw, 72px) clamp(18px, 5vw, 48px)",
             background:
               "linear-gradient(130deg, var(--ink-900) 0%, var(--ink-700) 60%, var(--gold-700) 140%)",
             color: "var(--cream-50)",
@@ -43,7 +43,7 @@ export default function BigCTA() {
               Để lại thông tin hoặc nhắn Zalo — cố vấn {SITE_NAME} sẽ liên hệ trong vòng 15 phút với
               danh sách BĐS phù hợp nhất.
             </p>
-            <div className="row" style={{ justifyContent: "center", marginTop: 36, gap: 14 }}>
+            <div className="row home-cta-actions" style={{ justifyContent: "center", marginTop: 36, gap: 14 }}>
               <Link href="/lien-he" className="btn btn-gold btn-lg">
                 Nhận tư vấn miễn phí →
               </Link>

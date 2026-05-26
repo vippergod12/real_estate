@@ -244,11 +244,11 @@ export default function FeaturedPickerPage() {
         </div>
         <div className="admin-toolbar">
           <input
+            className="featured-search"
             type="search"
             placeholder="Tìm theo tên / khu vực..."
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            style={{ minWidth: 240 }}
           />
           <select value={segmentFilter} onChange={(e) => setSegmentFilter(e.target.value)}>
             <option value="">Mọi phân khúc</option>

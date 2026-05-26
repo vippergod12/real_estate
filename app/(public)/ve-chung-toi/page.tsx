@@ -110,7 +110,7 @@ export default function AboutPage() {
               { t: "Đồng hành", d: "Không kết thúc ở chữ ký — chúng tôi còn ở đó sau giao dịch." },
               { t: "Tận tâm", d: "Không có 'khách nhỏ' — mọi ngân sách đều được phục vụ như nhau." },
             ].map((v) => (
-              <div key={v.t} className="card" style={{ padding: 28, background: "#fff" }}>
+              <div key={v.t} className="card" style={{ padding: "clamp(20px, 3vw, 28px)", background: "#fff" }}>
                 <div
                   className="serif"
                   style={{

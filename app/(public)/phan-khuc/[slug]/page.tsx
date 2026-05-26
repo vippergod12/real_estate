@@ -108,7 +108,7 @@ export default async function SegmentPage({ params, searchParams }: Params) {
           </div>
 
           {properties.length === 0 ? (
-            <p className="muted center" style={{ padding: 80 }}>
+            <p className="muted center" style={{ padding: "clamp(48px, 12vw, 80px) 0" }}>
               Chưa có BĐS nào trong phân khúc này.
             </p>
           ) : (

@@ -12,7 +12,7 @@ export default function PropertiesList({ properties }: { properties: Property[] 
 
   if (properties.length === 0) {
     return (
-      <p className="muted center" style={{ padding: 80 }}>
+      <p className="muted center" style={{ padding: "clamp(48px, 12vw, 80px) 0" }}>
         Không có bất động sản phù hợp. Hãy thử bộ lọc khác.
       </p>
     );

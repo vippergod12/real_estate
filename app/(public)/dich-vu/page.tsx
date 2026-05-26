@@ -66,7 +66,7 @@ export default function ServicesPage() {
         <div className="container">
           <div className="grid grid-3">
             {services.map((s) => (
-              <div key={s.title} className="card" style={{ padding: 32 }}>
+              <div key={s.title} className="card" style={{ padding: "clamp(20px, 4vw, 32px)" }}>
                 <div
                   style={{
                     width: 56,

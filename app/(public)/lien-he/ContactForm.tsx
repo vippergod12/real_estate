@@ -145,7 +145,7 @@ export default function ContactForm() {
     <form
       onSubmit={submit}
       className="card contact-form"
-      style={{ padding: 28, background: "#fff" }}
+      style={{ padding: "clamp(20px, 4vw, 28px)", background: "#fff" }}
       noValidate
     >
       {submitErr && (
